@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🥳恭喜你发现彩蛋🥳</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>🎵 音乐·歌词同步</title>
     <style>
         * {
             margin: 0;
@@ -13,28 +13,28 @@
 
         body {
             background-image: url('02.jpg');
-            background-size: cover;
+            /* 关键：保证背景图完整显示，不裁剪 */
+            background-size: contain;
             background-position: center;
-            background-attachment: fixed;
             background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-color: #000;  /* 留白区域填充黑色，可根据图片主色调修改 */
             font-family: system-ui, 'Segoe UI', 'Roboto', sans-serif;
             min-height: 100vh;
             display: flex;
             justify-content: flex-start;  /* 整体靠左 */
             align-items: center;
             padding: 1rem;
-            background-color: rgba(0, 0, 0, 0.4);
-            background-blend-mode: overlay;
         }
 
-        /* 卡片：窄宽度、靠左、内部居中 */
+        /* 卡片：固定宽度400px，靠左，内部居中 */
         .card {
             background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(10px);
             border-radius: 2rem;
             padding: 1.5rem;
             width: 100%;
-            max-width: 320px;            /* 宽度约为原来的一半 */
+            max-width: 400px;            /* 固定400px，手机上也是400px */
             box-shadow: 0 20px 35px rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255,255,255,0.2);
             color: white;
@@ -61,7 +61,7 @@
             font-size: 0.8rem;
         }
 
-        /* 播放器模块：白色半透明，内部内容居中 */
+        /* 播放器模块 */
         .music-player {
             background: rgba(255, 255, 255, 0.7);
             border-radius: 1.5rem;
@@ -69,14 +69,13 @@
             margin-bottom: 1.5rem;
             backdrop-filter: blur(4px);
             color: #1e2a3a;
-            width: 100%;                /* 占满卡片宽度 */
-            text-align: center;         /* 内部文字居中 */
+            width: 100%;
+            text-align: center;
         }
 
-        /* 歌曲切换按钮组 */
         .song-switch {
             display: flex;
-            justify-content: center;    /* 按钮居中 */
+            justify-content: center;
             gap: 8px;
             margin-bottom: 1rem;
             flex-wrap: wrap;
@@ -109,13 +108,11 @@
             text-align: center;
         }
 
-        /* 音频控件占满宽度 */
         .music-player audio {
             width: 100%;
             margin-bottom: 0.5rem;
         }
 
-        /* 歌词容器：占满卡片宽度，内部歌词左对齐（便于阅读） */
         .lyrics-container {
             background: rgba(0, 0, 0, 0.65);
             border-radius: 1rem;
@@ -127,7 +124,7 @@
             color: #f0f0f0;
             margin-top: 0.8rem;
             width: 100%;
-            text-align: left;           /* 歌词左对齐，更自然 */
+            text-align: left;
         }
         .lyrics-line {
             padding: 4px 8px;
@@ -154,16 +151,32 @@
             border-radius: 10px;
         }
 
+        /* 针对小屏幕进一步调整卡片内边距 */
         @media (max-width: 480px) {
-            .card { max-width: 280px; padding: 1rem; }
-            .lyrics-container { max-height: 200px; }
+            .card {
+                max-width: 400px;
+                padding: 1rem;
+            }
+            .lyrics-container {
+                max-height: 200px;
+            }
+            h1 {
+                font-size: 1.3rem;
+            }
+        }
+
+        /* 可选：如果希望背景图在手机横屏时更舒服 */
+        @media (orientation: landscape) {
+            body {
+                background-size: cover;  /* 横屏时可以改为cover铺满 */
+            }
         }
     </style>
 </head>
 <body>
 <div class="card">
     <div class="title-section">
-        <h1>🎵 音楽を楽しもう！🎵</h1>
+        <h1>🎵 音楽を楽しもう！</h1>
         <div class="sub">切换歌曲，歌词自动滚动</div>
     </div>
 
