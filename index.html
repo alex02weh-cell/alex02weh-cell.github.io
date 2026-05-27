@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🎵 🥳恭喜你发现彩蛋🥳</title>
+    <title>🎵 音乐·歌词同步</title>
     <style>
         * {
             margin: 0;
@@ -12,7 +12,7 @@
         }
 
         body {
-            background-image: url('02.jpg');
+            background-image: url('02.jpg');  /* 你的背景图 */
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -20,27 +20,30 @@
             font-family: system-ui, 'Segoe UI', 'Roboto', sans-serif;
             min-height: 100vh;
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;  /* 整体内容靠左（不居中） */
             align-items: center;
             padding: 1rem;
             background-color: rgba(0, 0, 0, 0.4);
             background-blend-mode: overlay;
         }
 
+        /* 卡片不再水平居中，而是靠左 */
         .card {
             background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(10px);
             border-radius: 2rem;
             padding: 1.5rem;
             width: 100%;
-            max-width: 600px;
+            max-width: 650px;
             box-shadow: 0 20px 35px rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255,255,255,0.2);
             color: white;
+            margin-left: 0;    /* 保证卡片靠左 */
+            margin-right: auto;
         }
 
         .title-section {
-            text-align: center;
+            text-align: left;   /* 标题也靠左，与播放器风格统一（可根据喜好改为 center） */
             margin-bottom: 1.5rem;
         }
         h1 {
@@ -53,7 +56,7 @@
             font-size: 0.9rem;
         }
 
-        /* 播放器模块：靠左 + 紧凑宽度 + 半透明 */
+        /* 播放器模块：靠左 + 紧凑宽度 */
         .music-player {
             background: rgba(255, 255, 255, 0.7);
             border-radius: 1.5rem;
@@ -62,18 +65,21 @@
             text-align: left;
             backdrop-filter: blur(4px);
             color: #1e2a3a;
+            
+            /* 关键：宽度由内容撑开，但不超过 280px */
             display: inline-block;
             width: auto;
-            max-width: 260px;        /* 白色区域最大宽度，右侧留空 */
+            max-width: 280px;      /* 白色板块最大宽度（可调，例如 260px） */
             margin-left: 0;
-            margin-right: auto;
+            margin-right: auto;    /* 右侧自动外边距，实现靠左留空 */
         }
 
-        /* 音频控件自动适应白色区域宽度 */
+        /* 音频控件宽度适应白色板块 */
         .music-player audio {
             width: 100%;
         }
 
+        /* 歌曲切换按钮组 */
         .song-switch {
             display: flex;
             gap: 8px;
@@ -89,6 +95,7 @@
             font-size: 0.8rem;
             cursor: pointer;
             transition: 0.2s;
+            white-space: nowrap;
         }
         .song-btn.active {
             background: #023e8a;
@@ -101,12 +108,12 @@
         .current-song {
             font-weight: bold;
             margin-bottom: 0.8rem;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: #023e8a;
             word-break: break-word;
         }
 
-        /* 歌词容器占满卡片宽度（不影响靠左播放器） */
+        /* 歌词容器宽度不受播放器限制，占满卡片宽度 */
         .lyrics-container {
             background: rgba(0, 0, 0, 0.65);
             border-radius: 1rem;
@@ -146,7 +153,7 @@
         @media (max-width: 480px) {
             .card { padding: 1rem; }
             .lyrics-container { max-height: 200px; }
-            .music-player { max-width: 240px; }  /* 手机上稍窄一点 */
+            .music-player { max-width: 260px; }  /* 手机上稍微窄一点 */
         }
     </style>
 </head>
@@ -173,7 +180,7 @@
 </div>
 
 <script>
-    // ========== 歌曲配置 ==========
+    // ========== 请根据你实际的文件名修改（大小写、空格要完全一致） ==========
     const songs = [
         {
             name: "YELL - いきものがかり",
@@ -191,8 +198,9 @@
             lrc: "plenty - 人間そっくり.lrc"
         }
     ];
-    // =============================
+    // ==================================================================
 
+    // DOM 元素
     const audio = document.getElementById('audioPlayer');
     const currentSongLabel = document.getElementById('currentSongLabel');
     const lyricsContainer = document.getElementById('lyricsContainer');
@@ -204,7 +212,7 @@
     let currentLineIndex = -1;
     let isLyricsReady = false;
 
-    // 解析 LRC（支持 [0:26] 和 [00:00.00]）
+    // 增强版 parseLrc，支持 [0:26] 和 [00:00.00]
     function parseLrc(lrcText) {
         const lines = lrcText.split(/\r?\n/);
         const result = [];
@@ -215,7 +223,6 @@
             if (!line) continue;
             const match = timeRegex.exec(line);
             if (!match) continue;
-            
             const minutes = parseInt(match[1], 10);
             const seconds = parseInt(match[2], 10);
             let millis = 0;
@@ -294,16 +301,13 @@
         currentSongIndex = index;
         const song = songs[currentSongIndex];
         currentSongLabel.innerText = `当前曲目：${song.name}`;
-        
         audio.src = song.mp3;
         audio.load();
-        
         lyricsContainer.innerHTML = '<div style="text-align:center; color:#aaa;">加载歌词中...</div>';
         currentLyrics = [];
         lyricElements = [];
         currentLineIndex = -1;
         isLyricsReady = false;
-        
         try {
             const response = await fetch(song.lrc);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -320,7 +324,6 @@
             console.error("加载歌词失败:", err);
             lyricsContainer.innerHTML = `<div style="text-align:center; color:#ffaa66;">歌词加载失败：${song.lrc} 不存在或格式错误</div>`;
         }
-        
         audio.play().catch(e => console.log("自动播放被阻止，请手动点击播放"));
     }
 
@@ -330,8 +333,9 @@
             const btn = document.createElement('button');
             btn.className = 'song-btn';
             if (idx === 0) btn.classList.add('active');
-            let displayName = song.name.length > 18 ? song.name.slice(0,16)+'…' : song.name;
-            btn.textContent = `🎵 ${displayName}`;
+            let shortName = song.name.length > 18 ? song.name.slice(0,16)+'…' : song.name;
+            btn.textContent = `🎵 ${shortName}`;
+            btn.dataset.index = idx;
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.song-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
