@@ -19,67 +19,64 @@
             background-repeat: no-repeat;
             font-family: system-ui, 'Segoe UI', 'Roboto', sans-serif;
             min-height: 100vh;
-            /* 关键：所有内容靠左 */
             display: flex;
-            justify-content: flex-start;
-            align-items: flex-start;  /* 顶部对齐，也可居中，但靠左优先 */
+            justify-content: flex-start;  /* 整体靠左 */
+            align-items: center;
             padding: 1rem;
             background-color: rgba(0, 0, 0, 0.4);
             background-blend-mode: overlay;
         }
 
-        /* 卡片：宽度收缩到内容大小，靠左，半透明 */
+        /* 卡片：窄宽度、靠左、内部居中 */
         .card {
             background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(10px);
             border-radius: 2rem;
             padding: 1.5rem;
-            /* 关键：宽度自适应内容，不占满整行 */
-            width: fit-content;
-            max-width: 95vw;        /* 防止超小屏幕溢出 */
+            width: 100%;
+            max-width: 320px;            /* 宽度约为原来的一半 */
             box-shadow: 0 20px 35px rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255,255,255,0.2);
             color: white;
             margin-left: 0;
-            margin-right: auto;      /* 右侧留空 */
+            margin-right: auto;
+            /* 内部内容居中 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .title-section {
-            text-align: left;
+            text-align: center;
             margin-bottom: 1.5rem;
+            width: 100%;
         }
         h1 {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             margin-bottom: 0.3rem;
             color: #fff;
         }
         .sub {
             color: rgba(255,255,255,0.8);
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
 
-        /* 播放器白色模块 */
+        /* 播放器模块：白色半透明，内部内容居中 */
         .music-player {
             background: rgba(255, 255, 255, 0.7);
             border-radius: 1.5rem;
             padding: 1rem;
             margin-bottom: 1.5rem;
-            text-align: left;
             backdrop-filter: blur(4px);
             color: #1e2a3a;
-            /* 宽度自适应，不额外限制 */
-            width: fit-content;
-            max-width: 100%;
+            width: 100%;                /* 占满卡片宽度 */
+            text-align: center;         /* 内部文字居中 */
         }
 
-        /* 音频控件宽度自适应，不强制拉伸 */
-        .music-player audio {
-            width: 100%;
-            min-width: 240px;    /* 保证播放条可操作，但整体卡片仍由内容撑开 */
-        }
-
+        /* 歌曲切换按钮组 */
         .song-switch {
             display: flex;
+            justify-content: center;    /* 按钮居中 */
             gap: 8px;
             margin-bottom: 1rem;
             flex-wrap: wrap;
@@ -90,7 +87,7 @@
             color: white;
             padding: 6px 12px;
             border-radius: 40px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             cursor: pointer;
             transition: 0.2s;
             white-space: nowrap;
@@ -106,23 +103,31 @@
         .current-song {
             font-weight: bold;
             margin-bottom: 0.8rem;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: #023e8a;
             word-break: break-word;
+            text-align: center;
         }
 
-        /* 歌词容器宽度与卡片一致，但卡片本身窄，所以歌词容器也窄 */
+        /* 音频控件占满宽度 */
+        .music-player audio {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        /* 歌词容器：占满卡片宽度，内部歌词左对齐（便于阅读） */
         .lyrics-container {
             background: rgba(0, 0, 0, 0.65);
             border-radius: 1rem;
             padding: 0.8rem;
             max-height: 260px;
             overflow-y: auto;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             line-height: 1.6;
             color: #f0f0f0;
             margin-top: 0.8rem;
             width: 100%;
+            text-align: left;           /* 歌词左对齐，更自然 */
         }
         .lyrics-line {
             padding: 4px 8px;
@@ -150,9 +155,8 @@
         }
 
         @media (max-width: 480px) {
-            .card { padding: 1rem; }
+            .card { max-width: 280px; padding: 1rem; }
             .lyrics-container { max-height: 200px; }
-            .music-player audio { min-width: 220px; }
         }
     </style>
 </head>
@@ -179,7 +183,7 @@
 </div>
 
 <script>
-    // ========== 请根据你实际的文件名修改 ==========
+    // ========== 请根据你实际的文件名修改（大小写、空格要完全一致） ==========
     const songs = [
         {
             name: "YELL - いきものがかり",
