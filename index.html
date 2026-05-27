@@ -56,18 +56,21 @@
 
         /* 播放器模块：靠左 + 70% 不透明度 */
         .music-player {
-            background: rgba(255, 255, 255, 0.7);   /* 70% 不透明度 */
-            border-radius: 1.5rem;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            text-align: left;
-            backdrop-filter: blur(4px);
-            color: #1e2a3a;
-            width: fit-content;          /* 宽度自适应内容 */
-            min-width: 260px;
-            max-width: 100%;
-            margin-right: auto;           /* 靠左 */
-        }
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 1.5rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    text-align: left;
+    backdrop-filter: blur(4px);
+    color: #1e2a3a;
+    
+    /* 靠左关键代码（兼容性更好） */
+    display: inline-block;   /* 让宽度随内容收缩 */
+    width: auto;             /* 不强制宽度 */
+    max-width: 100%;         /* 手机不溢出 */
+    margin-left: 0;          /* 左对齐 */
+    margin-right: auto;      /* 右边距自动，实现靠左 */
+}
 
         /* 歌曲切换按钮组 */
         .song-switch {
