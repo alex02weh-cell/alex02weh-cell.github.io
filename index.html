@@ -22,7 +22,7 @@
             font-family: system-ui, 'Segoe UI', 'Roboto', sans-serif;
             min-height: 100vh;
             display: flex;
-            justify-content: flex-start;  /* 整体靠左 */
+            justify-content: flex-start;
             align-items: center;
             padding: 1rem;
         }
@@ -143,112 +143,265 @@
         /* ========== 手机端样式 (宽度 ≤ 768px) ========== */
         @media (max-width: 768px) {
             body {
-                /* 手机端使用专用背景图 */
-                background-image: url('mobile-02.jpg');
+                background-image: url('mobile-02.png');
                 background-size: cover;
                 background-position: center;
                 background-attachment: fixed;
-                /* 改为靠下对齐 */
-                justify-content: flex-end;
-                align-items: flex-end;
-                padding: 1rem;
+                /* 改为块级布局，不使用 flex 居中 */
+                display: block;
+                padding: 0;
+                position: relative;
+                min-height: 100vh;
             }
 
+            /* 隐藏电脑端的卡片结构 */
             .card {
-                max-width: min(90vw, 400px);
-                padding: 1rem;
-                margin: 0 auto 1rem auto;  /* 底部居中 */
-                /* 允许卡片宽度自适应内容，不强制靠左 */
-                margin-left: auto;
-                margin-right: auto;
-            }
-
-            /* 隐藏副标题 */
-            .sub {
                 display: none;
             }
 
-            h1 {
-                font-size: 1.3rem;
-            }
-
-            .song-btn {
-                padding: 5px 12px;
-                font-size: 0.75rem;
-            }
-
-            .current-song {
-                font-size: 0.85rem;
-            }
-
-            /* 歌词框：仅显示约4行 (每行约32px，4行约130px) */
-            .lyrics-container {
-                max-height: 130px;
-                font-size: 0.8rem;
-                padding: 0.6rem;
-            }
-
-            .music-player {
+            /* ===== 歌词独立模块（左上角） ===== */
+            .mobile-lyrics {
+                position: fixed;
+                top: 15vh;           /* 稍往下一点 */
+                left: 5vw;
+                width: 60vw;          /* 宽度的五分之三 (60%) */
+                max-width: 280px;
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(12px);
+                border-radius: 1.2rem;
                 padding: 0.8rem;
-                margin-bottom: 1rem;
+                border: 1px solid rgba(255,255,255,0.2);
+                box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+                z-index: 10;
+            }
+
+            .mobile-lyrics .lyrics-container {
+                background: transparent;
+                max-height: 180px;    /* 6行歌词 (每行约30px) */
+                overflow-y: auto;
+                font-size: 0.85rem;
+                line-height: 1.5;
+                color: #f0f0f0;
+                padding: 0;
+                margin: 0;
+            }
+
+            .mobile-lyrics .lyrics-line {
+                padding: 5px 6px;
+            }
+
+            .mobile-lyrics .lyrics-line.current {
+                background: #ffb703;
+                color: #1e2a3a;
+            }
+
+            /* 自定义滚动条 */
+            .mobile-lyrics .lyrics-container::-webkit-scrollbar {
+                width: 3px;
+            }
+            .mobile-lyrics .lyrics-container::-webkit-scrollbar-track {
+                background: #444;
+                border-radius: 10px;
+            }
+            .mobile-lyrics .lyrics-container::-webkit-scrollbar-thumb {
+                background: #ffb703;
+                border-radius: 10px;
+            }
+
+            /* ===== 音乐播放器独立模块（底部居中） ===== */
+            .mobile-player {
+                position: fixed;
+                bottom: 5vh;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 85vw;
+                max-width: 380px;
+                background: rgba(255, 255, 255, 0.85);
+                backdrop-filter: blur(12px);
+                border-radius: 2rem;
+                padding: 1rem;
+                text-align: center;
+                box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+                border: 1px solid rgba(255,255,255,0.5);
+                z-index: 10;
+            }
+
+            .mobile-player .song-switch {
+                display: flex;
+                justify-content: center;
+                gap: 8px;
+                margin-bottom: 0.8rem;
+                flex-wrap: wrap;
+            }
+
+            .mobile-player .song-btn {
+                background: #0077b6;
+                font-size: 0.7rem;
+                padding: 5px 10px;
+            }
+
+            .mobile-player .current-song {
+                font-size: 0.85rem;
+                margin-bottom: 0.6rem;
+                color: #023e8a;
+            }
+
+            .mobile-player audio {
+                width: 100%;
+                border-radius: 30px;
+            }
+
+            .mobile-player .tip {
+                font-size: 0.65rem;
+                margin-top: 6px;
+                color: #555;
+            }
+
+            /* 隐藏电脑端原有的标题和副标题（手机端不需要） */
+            .title-section {
+                display: none;
             }
         }
 
-        /* 超小屏幕额外微调 */
+        /* 超小屏微调 */
         @media (max-width: 480px) {
-            .card {
-                max-width: 95vw;
-                padding: 0.8rem;
+            .mobile-lyrics {
+                top: 12vh;
+                width: 65vw;
+                padding: 0.6rem;
             }
-            .lyrics-container {
-                max-height: 120px;
+            .mobile-lyrics .lyrics-container {
+                max-height: 160px;
                 font-size: 0.75rem;
             }
-            .song-btn {
-                padding: 4px 8px;
-                font-size: 0.7rem;
+            .mobile-player {
+                width: 90vw;
+                padding: 0.8rem;
             }
         }
     </style>
 </head>
 <body>
-<div class="card">
-    <div class="title-section">
-        <h1>🎵 音楽を楽しもう！🎵</h1>
-        <div class="sub">切换歌曲，歌词自动滚动</div>
+    <!-- 电脑端原有卡片 -->
+    <div class="card">
+        <div class="title-section">
+            <h1>🎵 音楽を楽しもう！🎵</h1>
+            <div class="sub">切换歌曲，歌词自动滚动</div>
+        </div>
+        <div class="music-player">
+            <div class="song-switch" id="songSwitch"></div>
+            <div class="current-song" id="currentSongLabel">加载中...</div>
+            <audio id="audioPlayer" controls>
+                <source src="" type="audio/mpeg">
+                您的浏览器不支持 audio 元素。
+            </audio>
+            <p style="font-size: 0.7rem; margin-top: 6px; color: #333;">✨ 点击歌词可跳转 | 播放结束后自动下一首</p>
+        </div>
+        <div class="lyrics-container" id="lyricsContainer">
+            <div style="text-align:center; color:#aaa;">选择一首歌曲开始</div>
+        </div>
     </div>
-    <div class="music-player">
-        <div class="song-switch" id="songSwitch"></div>
-        <div class="current-song" id="currentSongLabel">加载中...</div>
-        <audio id="audioPlayer" controls>
-            <source src="" type="audio/mpeg">
-            您的浏览器不支持 audio 元素。
-        </audio>
-        <p style="font-size: 0.7rem; margin-top: 6px; color: #333;">✨ 点击歌词可跳转 | 播放结束后自动下一首</p>
-    </div>
-    <div class="lyrics-container" id="lyricsContainer">
-        <div style="text-align:center; color:#aaa;">选择一首歌曲开始</div>
-    </div>
-</div>
+
+    <!-- 手机端独立模块（通过 JS 动态填充内容，避免重复代码） -->
+    <div id="mobileContainer"></div>
 
 <script>
+    // 歌曲列表
     const songs = [
         { name: "YELL - いきものがかり", mp3: "YELL - いきものがかり.mp3", lrc: "YELL - いきものがかり.lrc" },
         { name: "旅立ちの日に - さくら学院", mp3: "旅立ちの日に - さくら学院.mp3", lrc: "旅立ちの日に - さくら学院.lrc" },
         { name: "plenty - 人間そっくり", mp3: "plenty - 人間そっくり.mp3", lrc: "plenty - 人間そっくり.lrc" }
     ];
 
-    const audio = document.getElementById('audioPlayer');
-    const currentSongLabel = document.getElementById('currentSongLabel');
-    const lyricsContainer = document.getElementById('lyricsContainer');
-    const songSwitch = document.getElementById('songSwitch');
-
+    // 全局变量
+    let audio = null;
     let currentSongIndex = 0;
     let currentLyrics = [];
     let lyricElements = [];
     let currentLineIndex = -1;
     let isLyricsReady = false;
 
+    // 手机端 DOM 元素（动态创建后赋值）
+    let mobileLyricsContainer = null;
+    let mobilePlayerDiv = null;
+    let mobileSongSwitch = null;
+    let mobileCurrentSongLabel = null;
+    let mobileAudio = null;
+
+    // 初始化：根据屏幕宽度决定是否创建手机端模块
+    function initMobileLayout() {
+        if (window.innerWidth <= 768) {
+            // 隐藏电脑端原有的 audio 和 lyrics 容器（避免重复）
+            const originalAudio = document.getElementById('audioPlayer');
+            const originalLyricsContainer = document.getElementById('lyricsContainer');
+            if (originalAudio) originalAudio.style.display = 'none';
+            if (originalLyricsContainer) originalLyricsContainer.style.display = 'none';
+            
+            // 创建手机端歌词模块
+            const lyricsWrapper = document.createElement('div');
+            lyricsWrapper.className = 'mobile-lyrics';
+            lyricsWrapper.innerHTML = `<div class="lyrics-container" id="mobileLyricsContainer"></div>`;
+            document.body.appendChild(lyricsWrapper);
+            
+            // 创建手机端播放器模块
+            const playerWrapper = document.createElement('div');
+            playerWrapper.className = 'mobile-player';
+            playerWrapper.innerHTML = `
+                <div class="song-switch" id="mobileSongSwitch"></div>
+                <div class="current-song" id="mobileCurrentSongLabel">加载中...</div>
+                <audio id="mobileAudio" controls></audio>
+                <div class="tip">✨ 点击歌词可跳转 | 播放结束后自动下一首</div>
+            `;
+            document.body.appendChild(playerWrapper);
+            
+            // 获取手机端 DOM 引用
+            mobileLyricsContainer = document.getElementById('mobileLyricsContainer');
+            mobileSongSwitch = document.getElementById('mobileSongSwitch');
+            mobileCurrentSongLabel = document.getElementById('mobileCurrentSongLabel');
+            mobileAudio = document.getElementById('mobileAudio');
+            
+            // 使用手机端的 audio 元素
+            audio = mobileAudio;
+            
+            // 绑定手机端的按钮事件
+            initMobileButtons();
+            
+            // 监听手机端音频事件
+            audio.addEventListener('timeupdate', () => {
+                if (isLyricsReady && currentLyrics.length && audio.currentTime) {
+                    updateLyricsHighlightMobile(audio.currentTime);
+                }
+            });
+            audio.addEventListener('ended', () => {
+                playNext();
+            });
+            
+            // 加载第一首歌
+            loadSong(0);
+        } else {
+            // 电脑端：使用原始元素
+            audio = document.getElementById('audioPlayer');
+            const originalLyricsContainer = document.getElementById('lyricsContainer');
+            const originalSongSwitch = document.getElementById('songSwitch');
+            const originalCurrentSongLabel = document.getElementById('currentSongLabel');
+            
+            // 绑定电脑端按钮事件
+            initPcButtons();
+            
+            audio.addEventListener('timeupdate', () => {
+                if (isLyricsReady && currentLyrics.length && audio.currentTime) {
+                    updateLyricsHighlightPc(audio.currentTime);
+                }
+            });
+            audio.addEventListener('ended', () => {
+                playNext();
+            });
+            
+            loadSong(0);
+        }
+    }
+    
+    // 解析 LRC
     function parseLrc(lrcText) {
         const lines = lrcText.split(/\r?\n/);
         const result = [];
@@ -273,10 +426,12 @@
         result.sort((a, b) => a.time - b.time);
         return result;
     }
-
-    function renderLyrics(lyrics) {
+    
+    // 电脑端渲染歌词
+    function renderLyricsPc(lyrics) {
+        const container = document.getElementById('lyricsContainer');
         if (!lyrics || lyrics.length === 0) {
-            lyricsContainer.innerHTML = '<div style="text-align:center; color:#ffaa66;">歌词文件解析后为空，请检查格式</div>';
+            container.innerHTML = '<div style="text-align:center; color:#ffaa66;">歌词文件解析后为空，请检查格式</div>';
             lyricElements = [];
             return;
         }
@@ -284,8 +439,8 @@
         for (let i = 0; i < lyrics.length; i++) {
             html += `<div class="lyrics-line" data-line-index="${i}">${escapeHtml(lyrics[i].text)}</div>`;
         }
-        lyricsContainer.innerHTML = html;
-        lyricElements = document.querySelectorAll('.lyrics-line');
+        container.innerHTML = html;
+        lyricElements = document.querySelectorAll('#lyricsContainer .lyrics-line');
         lyricElements.forEach((line, idx) => {
             line.addEventListener('click', () => {
                 if (currentLyrics[idx]) {
@@ -296,7 +451,32 @@
         });
         currentLineIndex = -1;
     }
-
+    
+    // 手机端渲染歌词
+    function renderLyricsMobile(lyrics) {
+        if (!mobileLyricsContainer) return;
+        if (!lyrics || lyrics.length === 0) {
+            mobileLyricsContainer.innerHTML = '<div style="text-align:center; color:#ffaa66;">歌词文件解析后为空</div>';
+            lyricElements = [];
+            return;
+        }
+        let html = '';
+        for (let i = 0; i < lyrics.length; i++) {
+            html += `<div class="lyrics-line" data-line-index="${i}">${escapeHtml(lyrics[i].text)}</div>`;
+        }
+        mobileLyricsContainer.innerHTML = html;
+        lyricElements = document.querySelectorAll('#mobileLyricsContainer .lyrics-line');
+        lyricElements.forEach((line, idx) => {
+            line.addEventListener('click', () => {
+                if (currentLyrics[idx]) {
+                    audio.currentTime = currentLyrics[idx].time;
+                    audio.play().catch(e => console.log("播放失败:", e));
+                }
+            });
+        });
+        currentLineIndex = -1;
+    }
+    
     function escapeHtml(str) {
         return str.replace(/[&<>]/g, function(m) {
             if (m === '&') return '&amp;';
@@ -305,8 +485,8 @@
             return m;
         });
     }
-
-    function updateLyricsHighlight(currentTime) {
+    
+    function updateLyricsHighlightPc(currentTime) {
         if (!currentLyrics.length) return;
         let newIndex = -1;
         for (let i = 0; i < currentLyrics.length; i++) {
@@ -324,52 +504,104 @@
             }
         }
     }
-
+    
+    function updateLyricsHighlightMobile(currentTime) {
+        if (!currentLyrics.length) return;
+        let newIndex = -1;
+        for (let i = 0; i < currentLyrics.length; i++) {
+            if (currentTime >= currentLyrics[i].time) newIndex = i;
+            else break;
+        }
+        if (newIndex !== -1 && newIndex !== currentLineIndex) {
+            if (currentLineIndex !== -1 && lyricElements[currentLineIndex]) {
+                lyricElements[currentLineIndex].classList.remove('current');
+            }
+            currentLineIndex = newIndex;
+            if (lyricElements[currentLineIndex]) {
+                lyricElements[currentLineIndex].classList.add('current');
+                lyricElements[currentLineIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    }
+    
     async function loadSong(index) {
         if (index < 0 || index >= songs.length) return;
         currentSongIndex = index;
         const song = songs[currentSongIndex];
-        currentSongLabel.innerText = `当前曲目：${song.name}`;
         
-        const btns = document.querySelectorAll('.song-btn');
-        btns.forEach((btn, i) => {
-            if (i === index) btn.classList.add('active');
-            else btn.classList.remove('active');
-        });
+        if (window.innerWidth <= 768 && mobileCurrentSongLabel) {
+            mobileCurrentSongLabel.innerText = `当前曲目：${song.name}`;
+        } else {
+            const pcLabel = document.getElementById('currentSongLabel');
+            if (pcLabel) pcLabel.innerText = `当前曲目：${song.name}`;
+        }
         
         audio.src = song.mp3;
         audio.load();
-        lyricsContainer.innerHTML = '<div style="text-align:center; color:#aaa;">加载歌词中...</div>';
+        
         currentLyrics = [];
         lyricElements = [];
         currentLineIndex = -1;
         isLyricsReady = false;
+        
         try {
             const response = await fetch(song.lrc);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const lrcText = await response.text();
             const parsed = parseLrc(lrcText);
             if (parsed.length === 0) {
-                lyricsContainer.innerHTML = '<div style="text-align:center; color:#ffaa66;">歌词文件解析后为空，请检查格式</div>';
+                if (window.innerWidth <= 768 && mobileLyricsContainer) {
+                    mobileLyricsContainer.innerHTML = '<div style="text-align:center; color:#ffaa66;">歌词文件解析后为空</div>';
+                } else {
+                    const pcContainer = document.getElementById('lyricsContainer');
+                    if (pcContainer) pcContainer.innerHTML = '<div style="text-align:center; color:#ffaa66;">歌词文件解析后为空</div>';
+                }
             } else {
                 currentLyrics = parsed;
-                renderLyrics(currentLyrics);
+                if (window.innerWidth <= 768) {
+                    renderLyricsMobile(currentLyrics);
+                } else {
+                    renderLyricsPc(currentLyrics);
+                }
                 isLyricsReady = true;
             }
         } catch (err) {
             console.error("加载歌词失败:", err);
-            lyricsContainer.innerHTML = `<div style="text-align:center; color:#ffaa66;">歌词加载失败：${song.lrc} 不存在或格式错误</div>`;
+            if (window.innerWidth <= 768 && mobileLyricsContainer) {
+                mobileLyricsContainer.innerHTML = `<div style="text-align:center; color:#ffaa66;">歌词加载失败</div>`;
+            } else {
+                const pcContainer = document.getElementById('lyricsContainer');
+                if (pcContainer) pcContainer.innerHTML = `<div style="text-align:center; color:#ffaa66;">歌词加载失败</div>`;
+            }
         }
+        
+        // 更新按钮高亮
+        if (window.innerWidth <= 768) {
+            const btns = document.querySelectorAll('#mobileSongSwitch .song-btn');
+            btns.forEach((btn, i) => {
+                if (i === index) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+        } else {
+            const btns = document.querySelectorAll('#songSwitch .song-btn');
+            btns.forEach((btn, i) => {
+                if (i === index) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+        }
+        
         audio.play().catch(e => console.log("自动播放被阻止，请手动点击播放"));
     }
-
+    
     function playNext() {
         let nextIndex = (currentSongIndex + 1) % songs.length;
         loadSong(nextIndex);
     }
-
-    function initButtons() {
-        songSwitch.innerHTML = '';
+    
+    function initPcButtons() {
+        const container = document.getElementById('songSwitch');
+        if (!container) return;
+        container.innerHTML = '';
         songs.forEach((song, idx) => {
             const btn = document.createElement('button');
             btn.className = 'song-btn';
@@ -379,22 +611,33 @@
             btn.addEventListener('click', () => {
                 loadSong(idx);
             });
-            songSwitch.appendChild(btn);
+            container.appendChild(btn);
         });
     }
-
-    audio.addEventListener('timeupdate', () => {
-        if (isLyricsReady && currentLyrics.length && audio.currentTime) {
-            updateLyricsHighlight(audio.currentTime);
-        }
+    
+    function initMobileButtons() {
+        if (!mobileSongSwitch) return;
+        mobileSongSwitch.innerHTML = '';
+        songs.forEach((song, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'song-btn';
+            if (idx === 0) btn.classList.add('active');
+            let shortName = song.name.length > 18 ? song.name.slice(0,16)+'…' : song.name;
+            btn.textContent = `🎵 ${shortName}`;
+            btn.addEventListener('click', () => {
+                loadSong(idx);
+            });
+            mobileSongSwitch.appendChild(btn);
+        });
+    }
+    
+    // 监听窗口大小变化，动态切换布局（刷新页面简单处理，也可以更优雅）
+    window.addEventListener('resize', () => {
+        location.reload();
     });
-
-    audio.addEventListener('ended', () => {
-        playNext();
-    });
-
-    initButtons();
-    loadSong(0);
+    
+    // 启动
+    initMobileLayout();
 </script>
 </body>
 </html>
