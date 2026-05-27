@@ -147,136 +147,133 @@
                 background-size: cover;
                 background-position: center;
                 background-attachment: fixed;
-                /* 改为块级布局，不使用 flex 居中 */
-                display: block;
-                padding: 0;
-                position: relative;
-                min-height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: flex-end;
+                padding: 1rem;
             }
 
-            /* 隐藏电脑端的卡片结构 */
+            /* 隐藏电脑端卡片 */
             .card {
                 display: none;
             }
 
-            /* ===== 歌词独立模块（左上角） ===== */
-            .mobile-lyrics {
-                position: fixed;
-                top: 30vh;           /* 稍往下一点 */
-                left: 5vw;
-                width: 60vw;          
-                max-width: 150px;
-                background: rgba(0, 0, 0, 0.7);
+            /* 手机端主容器 - 底部靠下，宽度自适应 */
+            .mobile-container {
+                width: 95%;
+                max-width: 450px;
+                margin-bottom: 4vh;
+                background: rgba(0, 0, 0, 0.55);
                 backdrop-filter: blur(12px);
-                border-radius: 1.2rem;
-                padding: 0.8rem;
+                border-radius: 1.8rem;
+                padding: 1rem;
                 border: 1px solid rgba(255,255,255,0.2);
-                box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-                z-index: 10;
+                box-shadow: 0 8px 25px rgba(0,0,0,0.3);
             }
 
-            .mobile-lyrics .lyrics-container {
-                background: transparent;
-                max-height: 180px;    /* 6行歌词 (每行约30px) */
+            /* 两列布局：左侧歌曲按钮区 + 右侧歌词区 */
+            .mobile-two-columns {
+                display: flex;
+                gap: 12px;
+                margin-bottom: 1rem;
+            }
+
+            /* 左侧：歌曲按钮（垂直排列） */
+            .mobile-song-list {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .mobile-song-btn {
+                background: #0077b6;
+                border: none;
+                color: white;
+                padding: 10px 6px;
+                border-radius: 40px;
+                font-size: 0.7rem;
+                cursor: pointer;
+                transition: 0.2s;
+                text-align: center;
+                word-break: break-word;
+                line-height: 1.3;
+            }
+            .mobile-song-btn.active {
+                background: #023e8a;
+                box-shadow: 0 0 0 2px #ffb703;
+            }
+
+            /* 右侧：歌词区域 */
+            .mobile-lyrics-area {
+                flex: 1.8;
+                background: rgba(0, 0, 0, 0.6);
+                border-radius: 1rem;
+                padding: 0.6rem;
+                max-height: 200px;
                 overflow-y: auto;
-                font-size: 0.85rem;
+                font-size: 0.75rem;
                 line-height: 1.5;
                 color: #f0f0f0;
-                padding: 0;
-                margin: 0;
             }
-
-            .mobile-lyrics .lyrics-line {
-                padding: 5px 6px;
+            .mobile-lyrics-line {
+                padding: 3px 5px;
+                transition: 0.2s;
+                border-radius: 6px;
+                cursor: pointer;
+                white-space: pre-wrap;
             }
-
-            .mobile-lyrics .lyrics-line.current {
+            .mobile-lyrics-line.current {
                 background: #ffb703;
                 color: #1e2a3a;
+                font-weight: bold;
             }
-
-            /* 自定义滚动条 */
-            .mobile-lyrics .lyrics-container::-webkit-scrollbar {
+            .mobile-lyrics-area::-webkit-scrollbar {
                 width: 3px;
             }
-            .mobile-lyrics .lyrics-container::-webkit-scrollbar-track {
+            .mobile-lyrics-area::-webkit-scrollbar-track {
                 background: #444;
                 border-radius: 10px;
             }
-            .mobile-lyrics .lyrics-container::-webkit-scrollbar-thumb {
+            .mobile-lyrics-area::-webkit-scrollbar-thumb {
                 background: #ffb703;
                 border-radius: 10px;
             }
 
-            /* ===== 音乐播放器独立模块（底部居中） ===== */
-            .mobile-player {
-                position: fixed;
-                bottom: 5vh;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 85vw;
-                max-width: 380px;
-                background: rgba(255, 255, 255, 0.85);
-                backdrop-filter: blur(12px);
-                border-radius: 2rem;
-                padding: 1rem;
-                text-align: center;
-                box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-                border: 1px solid rgba(255,255,255,0.5);
-                z-index: 10;
-            }
-
-            .mobile-player .song-switch {
-                display: flex;
-                justify-content: center;
-                gap: 8px;
-                margin-bottom: 0.8rem;
-                flex-wrap: wrap;
-            }
-
-            .mobile-player .song-btn {
-                background: #0077b6;
-                font-size: 0.7rem;
-                padding: 5px 10px;
-            }
-
-            .mobile-player .current-song {
+            /* 底部：当前曲目 + 播放器 */
+            .mobile-current-song {
+                font-weight: bold;
+                margin-bottom: 0.5rem;
                 font-size: 0.85rem;
-                margin-bottom: 0.6rem;
-                color: #023e8a;
+                color: #ffb703;
+                text-align: center;
+                word-break: break-word;
             }
-
-            .mobile-player audio {
+            .mobile-audio {
                 width: 100%;
+                margin-bottom: 0.3rem;
                 border-radius: 30px;
             }
-
-            .mobile-player .tip {
-                font-size: 0.65rem;
-                margin-top: 6px;
-                color: #555;
-            }
-
-            /* 隐藏电脑端原有的标题和副标题（手机端不需要） */
-            .title-section {
-                display: none;
+            .mobile-tip {
+                font-size: 0.6rem;
+                text-align: center;
+                color: rgba(255,255,255,0.6);
+                margin-top: 4px;
             }
         }
 
         /* 超小屏微调 */
         @media (max-width: 480px) {
-            .mobile-lyrics {
-                top: 12vh;
-                width: 65vw;
-                padding: 0.6rem;
-            }
-            .mobile-lyrics .lyrics-container {
-                max-height: 160px;
-                font-size: 0.75rem;
-            }
-            .mobile-player {
-                width: 90vw;
+            .mobile-container {
+                width: 98%;
                 padding: 0.8rem;
+            }
+            .mobile-song-btn {
+                font-size: 0.6rem;
+                padding: 8px 4px;
+            }
+            .mobile-lyrics-area {
+                max-height: 160px;
+                font-size: 0.7rem;
             }
         }
     </style>
@@ -302,18 +299,13 @@
         </div>
     </div>
 
-    <!-- 手机端独立模块（通过 JS 动态填充内容，避免重复代码） -->
-    <div id="mobileContainer"></div>
-
 <script>
-    // 歌曲列表
     const songs = [
         { name: "YELL - いきものがかり", mp3: "YELL - いきものがかり.mp3", lrc: "YELL - いきものがかり.lrc" },
         { name: "旅立ちの日に - さくら学院", mp3: "旅立ちの日に - さくら学院.mp3", lrc: "旅立ちの日に - さくら学院.lrc" },
         { name: "plenty - 人間そっくり", mp3: "plenty - 人間そっくり.mp3", lrc: "plenty - 人間そっくり.lrc" }
     ];
 
-    // 全局变量
     let audio = null;
     let currentSongIndex = 0;
     let currentLyrics = [];
@@ -321,52 +313,50 @@
     let currentLineIndex = -1;
     let isLyricsReady = false;
 
-    // 手机端 DOM 元素（动态创建后赋值）
-    let mobileLyricsContainer = null;
-    let mobilePlayerDiv = null;
-    let mobileSongSwitch = null;
+    // 手机端 DOM 元素
+    let mobileContainer = null;
+    let mobileSongList = null;
+    let mobileLyricsArea = null;
     let mobileCurrentSongLabel = null;
     let mobileAudio = null;
 
-    // 初始化：根据屏幕宽度决定是否创建手机端模块
-    function initMobileLayout() {
+    // 初始化布局
+    function initLayout() {
         if (window.innerWidth <= 768) {
-            // 隐藏电脑端原有的 audio 和 lyrics 容器（避免重复）
+            // 隐藏电脑端原有 audio 和 lyrics
             const originalAudio = document.getElementById('audioPlayer');
-            const originalLyricsContainer = document.getElementById('lyricsContainer');
+            const originalLyrics = document.getElementById('lyricsContainer');
             if (originalAudio) originalAudio.style.display = 'none';
-            if (originalLyricsContainer) originalLyricsContainer.style.display = 'none';
+            if (originalLyrics) originalLyrics.style.display = 'none';
             
-            // 创建手机端歌词模块
-            const lyricsWrapper = document.createElement('div');
-            lyricsWrapper.className = 'mobile-lyrics';
-            lyricsWrapper.innerHTML = `<div class="lyrics-container" id="mobileLyricsContainer"></div>`;
-            document.body.appendChild(lyricsWrapper);
-            
-            // 创建手机端播放器模块
-            const playerWrapper = document.createElement('div');
-            playerWrapper.className = 'mobile-player';
-            playerWrapper.innerHTML = `
-                <div class="song-switch" id="mobileSongSwitch"></div>
-                <div class="current-song" id="mobileCurrentSongLabel">加载中...</div>
-                <audio id="mobileAudio" controls></audio>
-                <div class="tip">✨ 点击歌词可跳转 | 播放结束后自动下一首</div>
+            // 创建手机端容器
+            mobileContainer = document.createElement('div');
+            mobileContainer.className = 'mobile-container';
+            mobileContainer.innerHTML = `
+                <div class="mobile-two-columns">
+                    <div class="mobile-song-list" id="mobileSongList"></div>
+                    <div class="mobile-lyrics-area" id="mobileLyricsArea">
+                        <div style="text-align:center; color:#aaa;">选择歌曲</div>
+                    </div>
+                </div>
+                <div class="mobile-current-song" id="mobileCurrentSongLabel">加载中...</div>
+                <audio class="mobile-audio" id="mobileAudio" controls></audio>
+                <div class="mobile-tip">✨ 点击歌词可跳转 | 播放结束后自动下一首</div>
             `;
-            document.body.appendChild(playerWrapper);
+            document.body.appendChild(mobileContainer);
             
-            // 获取手机端 DOM 引用
-            mobileLyricsContainer = document.getElementById('mobileLyricsContainer');
-            mobileSongSwitch = document.getElementById('mobileSongSwitch');
+            // 获取引用
+            mobileSongList = document.getElementById('mobileSongList');
+            mobileLyricsArea = document.getElementById('mobileLyricsArea');
             mobileCurrentSongLabel = document.getElementById('mobileCurrentSongLabel');
             mobileAudio = document.getElementById('mobileAudio');
             
-            // 使用手机端的 audio 元素
             audio = mobileAudio;
             
-            // 绑定手机端的按钮事件
+            // 创建歌曲按钮
             initMobileButtons();
             
-            // 监听手机端音频事件
+            // 监听音频事件
             audio.addEventListener('timeupdate', () => {
                 if (isLyricsReady && currentLyrics.length && audio.currentTime) {
                     updateLyricsHighlightMobile(audio.currentTime);
@@ -376,16 +366,13 @@
                 playNext();
             });
             
-            // 加载第一首歌
             loadSong(0);
         } else {
-            // 电脑端：使用原始元素
+            // 电脑端
             audio = document.getElementById('audioPlayer');
-            const originalLyricsContainer = document.getElementById('lyricsContainer');
-            const originalSongSwitch = document.getElementById('songSwitch');
-            const originalCurrentSongLabel = document.getElementById('currentSongLabel');
+            const pcLyricsContainer = document.getElementById('lyricsContainer');
+            const pcSongSwitch = document.getElementById('songSwitch');
             
-            // 绑定电脑端按钮事件
             initPcButtons();
             
             audio.addEventListener('timeupdate', () => {
@@ -400,8 +387,7 @@
             loadSong(0);
         }
     }
-    
-    // 解析 LRC
+
     function parseLrc(lrcText) {
         const lines = lrcText.split(/\r?\n/);
         const result = [];
@@ -426,12 +412,11 @@
         result.sort((a, b) => a.time - b.time);
         return result;
     }
-    
-    // 电脑端渲染歌词
+
     function renderLyricsPc(lyrics) {
         const container = document.getElementById('lyricsContainer');
         if (!lyrics || lyrics.length === 0) {
-            container.innerHTML = '<div style="text-align:center; color:#ffaa66;">歌词文件解析后为空，请检查格式</div>';
+            container.innerHTML = '<div style="text-align:center; color:#ffaa66;">歌词文件解析后为空</div>';
             lyricElements = [];
             return;
         }
@@ -451,21 +436,20 @@
         });
         currentLineIndex = -1;
     }
-    
-    // 手机端渲染歌词
+
     function renderLyricsMobile(lyrics) {
-        if (!mobileLyricsContainer) return;
+        if (!mobileLyricsArea) return;
         if (!lyrics || lyrics.length === 0) {
-            mobileLyricsContainer.innerHTML = '<div style="text-align:center; color:#ffaa66;">歌词文件解析后为空</div>';
+            mobileLyricsArea.innerHTML = '<div style="text-align:center; color:#ffaa66;">歌词为空</div>';
             lyricElements = [];
             return;
         }
         let html = '';
         for (let i = 0; i < lyrics.length; i++) {
-            html += `<div class="lyrics-line" data-line-index="${i}">${escapeHtml(lyrics[i].text)}</div>`;
+            html += `<div class="mobile-lyrics-line" data-line-index="${i}">${escapeHtml(lyrics[i].text)}</div>`;
         }
-        mobileLyricsContainer.innerHTML = html;
-        lyricElements = document.querySelectorAll('#mobileLyricsContainer .lyrics-line');
+        mobileLyricsArea.innerHTML = html;
+        lyricElements = document.querySelectorAll('.mobile-lyrics-line');
         lyricElements.forEach((line, idx) => {
             line.addEventListener('click', () => {
                 if (currentLyrics[idx]) {
@@ -476,16 +460,7 @@
         });
         currentLineIndex = -1;
     }
-    
-    function escapeHtml(str) {
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-    
+
     function updateLyricsHighlightPc(currentTime) {
         if (!currentLyrics.length) return;
         let newIndex = -1;
@@ -504,7 +479,7 @@
             }
         }
     }
-    
+
     function updateLyricsHighlightMobile(currentTime) {
         if (!currentLyrics.length) return;
         let newIndex = -1;
@@ -523,14 +498,23 @@
             }
         }
     }
-    
+
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
     async function loadSong(index) {
         if (index < 0 || index >= songs.length) return;
         currentSongIndex = index;
         const song = songs[currentSongIndex];
         
         if (window.innerWidth <= 768 && mobileCurrentSongLabel) {
-            mobileCurrentSongLabel.innerText = `当前曲目：${song.name}`;
+            mobileCurrentSongLabel.innerText = `${song.name}`;
         } else {
             const pcLabel = document.getElementById('currentSongLabel');
             if (pcLabel) pcLabel.innerText = `当前曲目：${song.name}`;
@@ -550,11 +534,11 @@
             const lrcText = await response.text();
             const parsed = parseLrc(lrcText);
             if (parsed.length === 0) {
-                if (window.innerWidth <= 768 && mobileLyricsContainer) {
-                    mobileLyricsContainer.innerHTML = '<div style="text-align:center; color:#ffaa66;">歌词文件解析后为空</div>';
+                if (window.innerWidth <= 768 && mobileLyricsArea) {
+                    mobileLyricsArea.innerHTML = '<div style="text-align:center; color:#ffaa66;">歌词解析为空</div>';
                 } else {
                     const pcContainer = document.getElementById('lyricsContainer');
-                    if (pcContainer) pcContainer.innerHTML = '<div style="text-align:center; color:#ffaa66;">歌词文件解析后为空</div>';
+                    if (pcContainer) pcContainer.innerHTML = '<div style="text-align:center; color:#ffaa66;">歌词解析为空</div>';
                 }
             } else {
                 currentLyrics = parsed;
@@ -567,8 +551,8 @@
             }
         } catch (err) {
             console.error("加载歌词失败:", err);
-            if (window.innerWidth <= 768 && mobileLyricsContainer) {
-                mobileLyricsContainer.innerHTML = `<div style="text-align:center; color:#ffaa66;">歌词加载失败</div>`;
+            if (window.innerWidth <= 768 && mobileLyricsArea) {
+                mobileLyricsArea.innerHTML = `<div style="text-align:center; color:#ffaa66;">歌词加载失败</div>`;
             } else {
                 const pcContainer = document.getElementById('lyricsContainer');
                 if (pcContainer) pcContainer.innerHTML = `<div style="text-align:center; color:#ffaa66;">歌词加载失败</div>`;
@@ -577,7 +561,7 @@
         
         // 更新按钮高亮
         if (window.innerWidth <= 768) {
-            const btns = document.querySelectorAll('#mobileSongSwitch .song-btn');
+            const btns = document.querySelectorAll('.mobile-song-btn');
             btns.forEach((btn, i) => {
                 if (i === index) btn.classList.add('active');
                 else btn.classList.remove('active');
@@ -592,12 +576,12 @@
         
         audio.play().catch(e => console.log("自动播放被阻止，请手动点击播放"));
     }
-    
+
     function playNext() {
         let nextIndex = (currentSongIndex + 1) % songs.length;
         loadSong(nextIndex);
     }
-    
+
     function initPcButtons() {
         const container = document.getElementById('songSwitch');
         if (!container) return;
@@ -608,36 +592,29 @@
             if (idx === 0) btn.classList.add('active');
             let shortName = song.name.length > 18 ? song.name.slice(0,16)+'…' : song.name;
             btn.textContent = `🎵 ${shortName}`;
-            btn.addEventListener('click', () => {
-                loadSong(idx);
-            });
+            btn.addEventListener('click', () => loadSong(idx));
             container.appendChild(btn);
         });
     }
-    
+
     function initMobileButtons() {
-        if (!mobileSongSwitch) return;
-        mobileSongSwitch.innerHTML = '';
+        if (!mobileSongList) return;
+        mobileSongList.innerHTML = '';
         songs.forEach((song, idx) => {
             const btn = document.createElement('button');
-            btn.className = 'song-btn';
+            btn.className = 'mobile-song-btn';
             if (idx === 0) btn.classList.add('active');
-            let shortName = song.name.length > 18 ? song.name.slice(0,16)+'…' : song.name;
-            btn.textContent = `🎵 ${shortName}`;
-            btn.addEventListener('click', () => {
-                loadSong(idx);
-            });
-            mobileSongSwitch.appendChild(btn);
+            btn.textContent = song.name.length > 20 ? song.name.slice(0,18)+'…' : song.name;
+            btn.addEventListener('click', () => loadSong(idx));
+            mobileSongList.appendChild(btn);
         });
     }
-    
-    // 监听窗口大小变化，动态切换布局（刷新页面简单处理，也可以更优雅）
+
     window.addEventListener('resize', () => {
         location.reload();
     });
-    
-    // 启动
-    initMobileLayout();
+
+    initLayout();
 </script>
 </body>
 </html>
