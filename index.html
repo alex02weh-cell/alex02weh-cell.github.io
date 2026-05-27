@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>我的音乐空间 - 双歌曲·歌词滚动</title>
+    <title>三歌曲·歌词滚动播放器</title>
     <style>
         * {
             margin: 0;
@@ -12,7 +12,7 @@
         }
 
         body {
-            background-image: url('02.jpg');
+            background-image: url('02.jpg');  /* 你的背景图 */
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -20,27 +20,26 @@
             font-family: system-ui, 'Segoe UI', 'Roboto', sans-serif;
             min-height: 100vh;
             display: flex;
-            justify-content: center;    /* 整体水平居中 */
+            justify-content: center;
             align-items: center;
             padding: 1rem;
             background-color: rgba(0, 0, 0, 0.4);
             background-blend-mode: overlay;
         }
 
-        /* 主卡片：整体仍然居中，但内部内容左对齐 */
+        /* 主卡片：整体居中，深色半透明 */
         .card {
-            background: rgba(0, 0, 0, 0.5);   /* 深色半透明背景，让白字更明显 */
+            background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(10px);
             border-radius: 2rem;
             padding: 1.5rem;
             width: 100%;
-            max-width: 550px;
+            max-width: 600px;
             box-shadow: 0 20px 35px rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255,255,255,0.2);
             color: white;
         }
 
-        /* 标题和描述保持居中（可选） */
         .title-section {
             text-align: center;
             margin-bottom: 1.5rem;
@@ -55,21 +54,25 @@
             font-size: 0.9rem;
         }
 
-        /* 播放器模块：靠左，半透明背景70%不透明度 */
+        /* 播放器模块：靠左 + 70% 不透明度 */
         .music-player {
-            background: rgba(255, 255, 255, 0.7);  /* 70%不透明度（30%透明） */
+            background: rgba(255, 255, 255, 0.7);   /* 70% 不透明度 */
             border-radius: 1.5rem;
             padding: 1rem;
             margin-bottom: 1.5rem;
-            text-align: left;            /* 内部文字左对齐 */
+            text-align: left;
             backdrop-filter: blur(4px);
             color: #1e2a3a;
+            width: fit-content;          /* 宽度自适应内容 */
+            min-width: 260px;
+            max-width: 100%;
+            margin-right: auto;           /* 靠左 */
         }
 
         /* 歌曲切换按钮组 */
         .song-switch {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             margin-bottom: 1rem;
             flex-wrap: wrap;
         }
@@ -77,9 +80,9 @@
             background: #0077b6;
             border: none;
             color: white;
-            padding: 6px 16px;
+            padding: 6px 14px;
             border-radius: 40px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: 0.2s;
         }
@@ -91,46 +94,45 @@
             background: #023e8a;
         }
 
-        /* 当前歌曲标题 */
         .current-song {
             font-weight: bold;
             margin-bottom: 0.8rem;
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: #023e8a;
+            word-break: break-word;
         }
 
-        /* audio 原生控件 */
         audio {
             width: 100%;
             margin-bottom: 0.5rem;
             border-radius: 40px;
         }
 
-        /* 歌词区域：可滚动 + 高亮当前行 */
+        /* 歌词容器：可滚动 */
         .lyrics-container {
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.65);
             border-radius: 1rem;
-            padding: 1rem;
-            max-height: 240px;
+            padding: 0.8rem;
+            max-height: 260px;
             overflow-y: auto;
             font-size: 0.9rem;
             line-height: 1.6;
-            color: #eee;
+            color: #f0f0f0;
             margin-top: 0.8rem;
         }
         .lyrics-line {
-            padding: 6px 8px;
+            padding: 4px 8px;
             transition: 0.2s;
             border-radius: 8px;
             cursor: pointer;
+            white-space: pre-wrap;
         }
         .lyrics-line.current {
             background: #ffb703;
             color: #1e2a3a;
             font-weight: bold;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
-        /* 自定义滚动条 */
         .lyrics-container::-webkit-scrollbar {
             width: 4px;
         }
@@ -143,150 +145,165 @@
             border-radius: 10px;
         }
 
-        /* 手机优化 */
         @media (max-width: 480px) {
             .card { padding: 1rem; }
             .lyrics-container { max-height: 200px; }
+            .music-player { min-width: 220px; }
         }
     </style>
 </head>
 <body>
 <div class="card">
     <div class="title-section">
-        <h1>🎵 我的小憩时光</h1>
-        <div class="sub">听着喜欢的音乐，看着美丽的背景</div>
+        <h1>🎵 三曲·歌词同步</h1>
+        <div class="sub">切换歌曲，歌词自动滚动</div>
     </div>
 
-    <!-- 播放器模块（左对齐，半透明） -->
     <div class="music-player">
-        <div class="song-switch">
-            <button class="song-btn" data-song="0">🎵 歌曲一</button>
-            <button class="song-btn" data-song="1">🎵 歌曲二</button>
+        <div class="song-switch" id="songSwitch">
+            <!-- 按钮会由js动态生成，确保顺序 -->
         </div>
-        <div class="current-song" id="currentSongLabel">当前曲目：歌曲一</div>
+        <div class="current-song" id="currentSongLabel">加载中...</div>
         <audio id="audioPlayer" controls loop>
             <source src="" type="audio/mpeg">
             您的浏览器不支持 audio 元素。
         </audio>
-        <p style="font-size: 0.7rem; margin-top: 6px; color: #333;">✨ 可切换歌曲，歌词自动同步滚动</p>
+        <p style="font-size: 0.7rem; margin-top: 6px; color: #333;">✨ 点击歌词可跳转 | 切换歌曲自动加载歌词</p>
     </div>
 
-    <!-- 歌词滚动区域 -->
     <div class="lyrics-container" id="lyricsContainer">
-        <!-- 歌词会由 JavaScript 动态生成 -->
-        <div style="text-align:center; color:#aaa;">加载歌词中...</div>
+        <div style="text-align:center; color:#aaa;">选择一首歌曲开始</div>
     </div>
 </div>
 
 <script>
-    // ======================= 请修改以下配置 =======================
-    // 两首歌曲的文件名（放在和 index.html 相同的目录下）
+    // ========== 请修改以下配置（歌曲文件名和对应的 .lrc 文件名）==========
     const songs = [
-        { name: "人間そっくりーplenty", file: "song1.mp3" },   // 👈 改成你的第一个 mp3 文件名
-        { name: "第二首歌",              file: "song2.mp3" }    // 👈 改成你的第二个 mp3 文件名
+        {
+            name: "旅立ちの日に - さくら学院",
+            mp3: "旅立ちの日に - さくら学院.mp3",
+            lrc: "旅立ちの日に - さくら学院.lrc"
+        },
+        {
+            name: "plenty - 人間そっくり",
+            mp3: "plenty - 人間そっくり.mp3",
+            lrc: "plenty - 人間そっくり.lrc"
+        },
+        {
+            name: "YELL - 生物股长",
+            mp3: "YELL - 生物股长.mp3",
+            lrc: "YELL - 生物股长.lrc"
+        }
     ];
-
-    // 歌词数据（格式：[时间, 歌词文本]）
-    // 时间格式为 秒数（可以是小数） 或者 "mm:ss.ms"
-    // 这里提供示例歌词（以秒为单位），你可以修改成你自己的歌词和对应时间
-    // 注意：两首歌的歌词可以不同，但为了演示，我们只做一套通用的歌词。
-    // 如果你需要为每首歌单独配置歌词，可以扩展为二维数组，这里先给一个示例。
-    const lyricsData = [
-        [0.0,   "🎵 (前奏) 音乐开始..."],
-        [5.0,   "第一句歌词示例"],
-        [10.0,  "第二句歌词示例  —— 你可以改成自己的歌词"],
-        [15.0,  "第三句歌词，支持中文英文"],
-        [20.0,  "第四句，随着音乐进度自动高亮并滚动"],
-        [25.0,  "第五句：这首歌让你想起什么？"],
-        [30.0,  "第六句：你可以自由编辑这些内容"],
-        [35.0,  "第七句：时间戳可以精确到毫秒"],
-        [40.0,  "第八句：只要把 '秒数' 和 歌词对应起来就行"],
-        [45.0,  "第九句：示例结束，请替换成真实的歌词"],
-        [50.0,  "🎶 尾声 ..."]
-    ];
-
-    // 如果你想让两首歌分别用不同的歌词，可以这样：
-    // const lyricsForSong0 = [ [...], [...] ];
-    // const lyricsForSong1 = [ [...], [...] ];
-    // 然后在切换歌曲时重新生成歌词。为简化，这里只示范一套，你可以自行扩展。
-    // ============================================================
+    // ==================================================================
 
     // DOM 元素
     const audio = document.getElementById('audioPlayer');
-    const songBtns = document.querySelectorAll('.song-btn');
     const currentSongLabel = document.getElementById('currentSongLabel');
     const lyricsContainer = document.getElementById('lyricsContainer');
+    const songSwitch = document.getElementById('songSwitch');
 
-    let currentSongIndex = 0;        // 当前第几首歌 (0 或 1)
-    let currentLyrics = lyricsData;   // 当前歌词数组（可替换为歌曲专用）
-    let lyricElements = [];            // 存储每个歌词行的 DOM 元素
+    let currentSongIndex = 0;
+    let currentLyrics = [];     // 存储解析后的 [{time: 秒数, text: 歌词}, ...]
+    let lyricElements = [];
     let currentLineIndex = -1;
+    let isLyricsReady = false;
 
-    // 辅助：将 mm:ss.ms 或 数字字符串转换为秒数
-    function parseTimeToSeconds(timeStr) {
-        if (typeof timeStr === 'number') return timeStr;
-        if (typeof timeStr === 'string') {
-            // 格式 "mm:ss.ms" 或 "mm:ss"
-            const parts = timeStr.split(':');
-            if (parts.length === 2) {
-                const minutes = parseFloat(parts[0]);
-                const seconds = parseFloat(parts[1]);
-                return minutes * 60 + seconds;
+    // 解析标准 .lrc 内容，返回数组 [{time: 秒数, text: 歌词}]
+    function parseLrc(lrcText) {
+        const lines = lrcText.split(/\r?\n/);
+        const result = [];
+        const timeRegex = /\[(\d{2}):(\d{2})(?:\.(\d{2,3}))?\]/g;
+        
+        for (let line of lines) {
+            line = line.trim();
+            if (!line) continue;
+            // 提取所有时间标签
+            let match;
+            let times = [];
+            let lastIndex = 0;
+            while ((match = timeRegex.exec(line)) !== null) {
+                const minutes = parseInt(match[1], 10);
+                const seconds = parseInt(match[2], 10);
+                let millis = 0;
+                if (match[3]) {
+                    // 补足到3位
+                    let msStr = match[3].padEnd(3, '0');
+                    millis = parseInt(msStr, 10);
+                }
+                const totalSec = minutes * 60 + seconds + millis / 1000;
+                times.push(totalSec);
+                lastIndex = match.index + match[0].length;
             }
-            return parseFloat(timeStr);
+            if (times.length === 0) continue;
+            // 歌词文本（去掉所有时间标签后的部分）
+            let lyricText = line.replace(/\[\d{2}:\d{2}(?:\.\d{2,3})?\]/g, '').trim();
+            if (lyricText === '') lyricText = '♪';  // 纯时间标签行用音符占位
+            
+            for (let t of times) {
+                result.push({ time: t, text: lyricText });
+            }
         }
-        return 0;
+        // 按时间排序（有些lrc文件顺序可能乱）
+        result.sort((a, b) => a.time - b.time);
+        return result;
     }
 
-    // 生成歌词 HTML，并存储行元素
+    // 渲染歌词到容器
     function renderLyrics(lyrics) {
         if (!lyrics || lyrics.length === 0) {
-            lyricsContainer.innerHTML = '<div style="text-align:center; color:#aaa;">暂无歌词，你可以手动添加~</div>';
+            lyricsContainer.innerHTML = '<div style="text-align:center; color:#aaa;">暂无歌词，请检查 .lrc 文件</div>';
+            lyricElements = [];
             return;
         }
         let html = '';
         for (let i = 0; i < lyrics.length; i++) {
-            const text = lyrics[i][1];
-            html += `<div class="lyrics-line" data-line-index="${i}">${text}</div>`;
+            html += `<div class="lyrics-line" data-line-index="${i}">${escapeHtml(lyrics[i].text)}</div>`;
         }
         lyricsContainer.innerHTML = html;
-        // 获取所有歌词行元素
         lyricElements = document.querySelectorAll('.lyrics-line');
-        // 添加点击歌词行跳转播放功能（可选）
+        // 绑定点击跳转事件
         lyricElements.forEach((line, idx) => {
             line.addEventListener('click', () => {
                 if (currentLyrics[idx]) {
-                    const targetTime = parseTimeToSeconds(currentLyrics[idx][0]);
-                    audio.currentTime = targetTime;
-                    audio.play().catch(e => console.log("播放失败", e));
+                    audio.currentTime = currentLyrics[idx].time;
+                    audio.play().catch(e => console.log("播放失败:", e));
                 }
             });
         });
-        // 重置高亮
         currentLineIndex = -1;
     }
 
-    // 根据当前播放时间高亮对应歌词并滚动
+    // 简单防XSS
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+
+    // 根据当前播放时间高亮歌词
     function updateLyricsHighlight(currentTime) {
-        if (!currentLyrics || currentLyrics.length === 0) return;
+        if (!currentLyrics.length) return;
         let newIndex = -1;
         for (let i = 0; i < currentLyrics.length; i++) {
-            const time = parseTimeToSeconds(currentLyrics[i][0]);
-            if (currentTime >= time) {
+            if (currentTime >= currentLyrics[i].time) {
                 newIndex = i;
             } else {
                 break;
             }
         }
         if (newIndex !== -1 && newIndex !== currentLineIndex) {
-            // 移除之前的高亮
             if (currentLineIndex !== -1 && lyricElements[currentLineIndex]) {
                 lyricElements[currentLineIndex].classList.remove('current');
             }
             currentLineIndex = newIndex;
             if (lyricElements[currentLineIndex]) {
                 lyricElements[currentLineIndex].classList.add('current');
-                // 自动滚动到可视区域
                 lyricElements[currentLineIndex].scrollIntoView({
                     behavior: 'smooth',
                     block: 'center'
@@ -295,47 +312,80 @@
         }
     }
 
-    // 加载歌曲
-    function loadSong(index) {
-        if (index >= songs.length) return;
+    // 加载歌曲（mp3 和 lrc）
+    async function loadSong(index) {
+        if (index < 0 || index >= songs.length) return;
         currentSongIndex = index;
         const song = songs[currentSongIndex];
         currentSongLabel.innerText = `当前曲目：${song.name}`;
-        audio.src = song.file;
+        
+        // 设置音频源
+        audio.src = song.mp3;
         audio.load();
-        // 可选：为不同歌曲加载不同歌词（这里简单复用同一套 lyricsData，你可以扩展）
-        // 如果需要每首歌独立歌词，请在切换时重新赋值 currentLyrics 并重新渲染
-        // 示例： if(currentSongIndex===0) currentLyrics = lyricsSong0; else currentLyrics = lyricsSong1;
-        currentLyrics = lyricsData;  // 暂时共用演示歌词
-        renderLyrics(currentLyrics);
-        // 尝试自动播放（需用户交互后才行，但点击切换按钮时用户已有点击，可以播放）
+        
+        // 清空旧歌词、重置高亮
+        lyricsContainer.innerHTML = '<div style="text-align:center; color:#aaa;">加载歌词中...</div>';
+        currentLyrics = [];
+        lyricElements = [];
+        currentLineIndex = -1;
+        isLyricsReady = false;
+        
+        // 获取 .lrc 文件
+        try {
+            const response = await fetch(song.lrc);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            const lrcText = await response.text();
+            const parsed = parseLrc(lrcText);
+            if (parsed.length === 0) {
+                lyricsContainer.innerHTML = '<div style="text-align:center; color:#ffaa66;">歌词文件解析后为空，请检查格式</div>';
+            } else {
+                currentLyrics = parsed;
+                renderLyrics(currentLyrics);
+                isLyricsReady = true;
+            }
+        } catch (err) {
+            console.error("加载歌词失败:", err);
+            lyricsContainer.innerHTML = `<div style="text-align:center; color:#ffaa66;">歌词加载失败：${song.lrc} 不存在或格式错误</div>`;
+        }
+        
+        // 尝试自动播放（由于用户点击了按钮，通常可以播放）
         audio.play().catch(e => {
-            console.log("自动播放被拦截，请手动点击播放按钮");
+            console.log("自动播放被浏览器阻止，请手动点击播放按钮");
+            // 在播放器上显示一个提醒（可选）
         });
     }
 
-    // 切换歌曲按钮事件
-    songBtns.forEach((btn, idx) => {
-        btn.addEventListener('click', () => {
-            // 更新按钮激活样式
-            songBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            loadSong(idx);
+    // 生成歌曲切换按钮
+    function initButtons() {
+        songSwitch.innerHTML = '';
+        songs.forEach((song, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'song-btn';
+            if (idx === 0) btn.classList.add('active');
+            btn.textContent = `🎵 ${song.name.length > 18 ? song.name.slice(0,16)+'…' : song.name}`;
+            btn.dataset.index = idx;
+            btn.addEventListener('click', (e) => {
+                // 更新按钮样式
+                document.querySelectorAll('.song-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                loadSong(idx);
+            });
+            songSwitch.appendChild(btn);
         });
-    });
+    }
 
-    // 监听音频播放时间更新
+    // 监听播放时间更新
     audio.addEventListener('timeupdate', () => {
-        if (audio.currentTime && currentLyrics) {
+        if (isLyricsReady && currentLyrics.length && audio.currentTime) {
             updateLyricsHighlight(audio.currentTime);
         }
     });
 
-    // 初始化：默认加载第一首歌，并让第一首歌按钮高亮
-    songBtns[0].classList.add('active');
-    loadSong(0);
-
-    // 可选：当音频 seek 或结束时重置高亮边界（不用额外处理，timeupdate 会覆盖）
+    // 初始化
+    initButtons();
+    loadSong(0); // 默认加载第一首
 </script>
 </body>
 </html>
