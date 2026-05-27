@@ -13,7 +13,8 @@
 
         body {
             background-image: url('02.jpg');
-            background-size: contain;
+            /* 关键修改：contain → cover，铺满全屏无黑边 */
+            background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             background-attachment: fixed;
@@ -186,7 +187,6 @@
     <div class="music-player">
         <div class="song-switch" id="songSwitch"></div>
         <div class="current-song" id="currentSongLabel">加载中...</div>
-        <!-- 移除 loop 属性，不再单曲循环 -->
         <audio id="audioPlayer" controls>
             <source src="" type="audio/mpeg">
             您的浏览器不支持 audio 元素。
@@ -298,7 +298,6 @@
         const song = songs[currentSongIndex];
         currentSongLabel.innerText = `当前曲目：${song.name}`;
         
-        // 更新按钮激活样式
         const btns = document.querySelectorAll('.song-btn');
         btns.forEach((btn, i) => {
             if (i === index) btn.classList.add('active');
@@ -331,7 +330,6 @@
         audio.play().catch(e => console.log("自动播放被阻止，请手动点击播放"));
     }
 
-    // 自动播放下一首
     function playNext() {
         let nextIndex = (currentSongIndex + 1) % songs.length;
         loadSong(nextIndex);
@@ -358,7 +356,6 @@
         }
     });
 
-    // 监听播放结束事件，自动下一首
     audio.addEventListener('ended', () => {
         playNext();
     });
