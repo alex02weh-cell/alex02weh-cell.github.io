@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🥳恭喜你找到了彩蛋🥳</title>
+    <title>🥳恭喜你发现了彩蛋🥳</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <style>
-        /* 所有样式与上一版完全相同，只修改手机端 .video-modal 增加拖动相关 */
         * {
             margin: 0;
             padding: 0;
@@ -35,7 +34,7 @@
             border-radius: 2rem;
             padding: 1.5rem;
             width: 100%;
-            max-width: 400px;
+            max-width: 550px;  /* 稍微加宽以容纳右侧图片 */
             box-shadow: 0 8px 20px rgba(0,0,0,0.2);
             border: 1px solid rgba(255,255,255,0.2);
             color: white;
@@ -59,15 +58,32 @@
             color: rgba(255,255,255,0.8);
             font-size: 0.8rem;
         }
+        /* 电脑端：播放器 + 图片 并排 */
+        .pc-player-wrapper {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 1.5rem;
+        }
         .music-player {
             background: rgba(255, 255, 255, 0.5);
             backdrop-filter: blur(4px);
             border-radius: 1.5rem;
             padding: 1rem;
-            margin-bottom: 1.5rem;
-            color: #1e2a3a;
-            width: 100%;
+            flex: 1;
             text-align: center;
+        }
+        .pc-side-image {
+            flex-shrink: 0;
+            width: auto;
+            max-width: 120px;
+        }
+        .pc-side-image img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            display: block;
         }
         .song-switch {
             display: flex;
@@ -216,11 +232,27 @@
                 border-radius: 1.8rem;
                 padding: 1rem;
                 border: 1px solid rgba(255,255,255,0.2);
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;  /* 内容靠左 */
+            }
+            /* 手机端图片放在播放器上方，靠左，宽度不超过150px */
+            .mobile-top-image {
+                margin-bottom: 10px;
+                max-width: 150px;
+                width: auto;
+            }
+            .mobile-top-image img {
+                width: 100%;
+                height: auto;
+                border-radius: 12px;
+                display: block;
             }
             .mobile-two-columns {
                 display: flex;
                 gap: 12px;
                 margin-bottom: 1rem;
+                width: 100%;
             }
             .mobile-song-list {
                 flex: 1;
@@ -270,16 +302,11 @@
                 font-size: 0.85rem;
                 color: #ffb703;
                 text-align: center;
+                width: 100%;
             }
             .mobile-audio {
                 width: 100%;
                 margin-bottom: 0.3rem;
-            }
-            .mobile-tip {
-                font-size: 0.6rem;
-                text-align: center;
-                color: rgba(255,255,255,0.8);
-                margin-top: 4px;
             }
             .mv-button {
                 background: rgba(255,255,255,0.7);
@@ -311,6 +338,7 @@
                 user-select: none;
                 touch-action: none;
                 border-bottom: 1px solid rgba(255,255,255,0.3);
+                z-index: 2002;
             }
             .video-modal .drag-handle:active {
                 cursor: grabbing;
@@ -321,6 +349,7 @@
                 width: 24px;
                 height: 24px;
                 font-size: 1rem;
+                z-index: 2003;
             }
             .video-modal .video-js,
             .video-modal video {
@@ -393,8 +422,9 @@
     </style>
 </head>
 <body>
-    <!-- 视频浮层（电脑端和手机端共用，但手机端会动态添加拖动条） -->
+    <!-- 视频浮层：包含拖动条 -->
     <div id="videoModal" class="video-modal">
+        <div class="drag-handle">⋮⋮ 拖动移动窗口 ⋮⋮</div>
         <button class="close-video" id="closeVideoBtn">✕</button>
         <div id="videoContainer"></div>
     </div>
@@ -404,11 +434,17 @@
                 <h1>🎵 音楽を楽しもう！🎵</h1>
                 <div class="sub">切换歌曲，歌词自动滚动</div>
             </div>
-            <div class="music-player">
-                <div class="song-switch" id="songSwitch"></div>
-                <div class="current-song" id="currentSongLabel">加载中...</div>
-                <audio id="audioPlayer" controls></audio>
-                <button class="mv-button" id="watchMVBtn">🎬 观看MV</button>
+            <!-- 电脑端：播放器 + 右侧图片 -->
+            <div class="pc-player-wrapper">
+                <div class="music-player">
+                    <div class="song-switch" id="songSwitch"></div>
+                    <div class="current-song" id="currentSongLabel">加载中...</div>
+                    <audio id="audioPlayer" controls></audio>
+                    <button class="mv-button" id="watchMVBtn">🎬 观看MV</button>
+                </div>
+                <div class="pc-side-image">
+                    <img src="卒業おめでとう(pc).png" alt="卒業おめでとう">
+                </div>
             </div>
             <div class="lyrics-container" id="lyricsContainer">
                 <div style="text-align:center; color:#aaa;">选择一首歌曲开始</div>
@@ -417,7 +453,7 @@
     </div>
 
     <script>
-        // 特殊彩蛋映射
+        // ========== 彩蛋映射 ==========
         const specialEggs = {
             "蒋珊": "全体起立！欢迎蒋哥莅临！！！👏👏",
             "魏艳": "热烈欢迎年度最佳小语种同事魏女士莅临寒舍👏👏👏",
@@ -425,7 +461,6 @@
             "安尔蒂西亚": "你是最屌的吊毛！！！哈哈哈哈哈"
         };
 
-        // MV 映射表
         const mvMap = {
             "YELL - いきものがかり": "https://mv6.music.tc.qq.com/80E13F7987FB96C2F4531383C13025CF0717B6F8D446EA1244F8328EF243610A2E7696DD1A66447ECDE31EB41749DB03ZZqqmusic_default__v21ea05cc4/qmmv_0a6bbdhbbqbvisila4gqmdafb4evhwdoux4h7tnti4dqobyhb4ea.f9934.m3u8",
             "旅立ちの日に - さくら学院": "さくら学院 - 旅立ちの日にMV.mp4",
@@ -546,7 +581,7 @@
             return verifiedName;
         }
 
-        // 视频模块：支持 mp4 和 m3u8
+        // 视频模块
         function closeVideo() {
             const modal = document.getElementById('videoModal');
             if (modal) modal.classList.remove('active');
@@ -557,13 +592,12 @@
             const container = document.getElementById('videoContainer');
             if (container) container.innerHTML = '';
             isVideoOpen = false;
-            // 如果是手机端，重置位置到默认（右下角）
+            // 手机端重置位置到右下角
             if (window.innerWidth <= 768) {
-                const modalElem = document.getElementById('videoModal');
-                modalElem.style.top = '';
-                modalElem.style.left = '';
-                modalElem.style.bottom = '20px';
-                modalElem.style.right = '20px';
+                modal.style.top = '';
+                modal.style.left = '';
+                modal.style.bottom = '20px';
+                modal.style.right = '20px';
             }
         }
 
@@ -603,82 +637,9 @@
             modal.classList.add('active');
             isVideoOpen = true;
             if (audio && !audio.paused) audio.pause();
-
-            // 手机端：添加拖动条（如果还没有）
-            if (window.innerWidth <= 768 && !modal.querySelector('.drag-handle')) {
-                const handle = document.createElement('div');
-                handle.className = 'drag-handle';
-                handle.innerHTML = '⋮⋮ 拖动移动窗口 ⋮⋮';
-                modal.insertBefore(handle, modal.firstChild);
-                // 绑定拖动事件
-                let startX, startY, startLeft, startTop, startBottom, startRight;
-                let isDragging = false;
-                const onTouchStart = (e) => {
-                    e.preventDefault();
-                    const touch = e.touches[0];
-                    startX = touch.clientX;
-                    startY = touch.clientY;
-                    // 获取当前的位置（可能是 right/bottom 或 left/top）
-                    const style = window.getComputedStyle(modal);
-                    const currentRight = parseFloat(style.right);
-                    const currentBottom = parseFloat(style.bottom);
-                    const currentLeft = parseFloat(style.left);
-                    const currentTop = parseFloat(style.top);
-                    if (!isNaN(currentLeft) && !isNaN(currentTop)) {
-                        startLeft = currentLeft;
-                        startTop = currentTop;
-                        startBottom = null;
-                        startRight = null;
-                    } else {
-                        startLeft = null;
-                        startTop = null;
-                        startBottom = currentBottom;
-                        startRight = currentRight;
-                    }
-                    isDragging = true;
-                };
-                const onTouchMove = (e) => {
-                    if (!isDragging) return;
-                    e.preventDefault();
-                    const touch = e.touches[0];
-                    const deltaX = touch.clientX - startX;
-                    const deltaY = touch.clientY - startY;
-                    if (startLeft !== null && startTop !== null) {
-                        let newLeft = startLeft + deltaX;
-                        let newTop = startTop + deltaY;
-                        // 边界限制（避免拖出屏幕）
-                        const maxX = window.innerWidth - modal.offsetWidth;
-                        const maxY = window.innerHeight - modal.offsetHeight;
-                        newLeft = Math.min(Math.max(0, newLeft), maxX);
-                        newTop = Math.min(Math.max(0, newTop), maxY);
-                        modal.style.left = newLeft + 'px';
-                        modal.style.top = newTop + 'px';
-                        modal.style.right = 'auto';
-                        modal.style.bottom = 'auto';
-                    } else if (startBottom !== null && startRight !== null) {
-                        let newRight = startRight - deltaX;
-                        let newBottom = startBottom - deltaY;
-                        const maxRight = window.innerWidth - modal.offsetWidth;
-                        const maxBottom = window.innerHeight - modal.offsetHeight;
-                        newRight = Math.min(Math.max(0, newRight), maxRight);
-                        newBottom = Math.min(Math.max(0, newBottom), maxBottom);
-                        modal.style.right = newRight + 'px';
-                        modal.style.bottom = newBottom + 'px';
-                        modal.style.left = 'auto';
-                        modal.style.top = 'auto';
-                    }
-                };
-                const onTouchEnd = () => {
-                    isDragging = false;
-                };
-                handle.addEventListener('touchstart', onTouchStart, { passive: false });
-                handle.addEventListener('touchmove', onTouchMove, { passive: false });
-                handle.addEventListener('touchend', onTouchEnd);
-                // 保存以便清理（但不需要特别清理，因为每次关闭再打开会重新创建）
-            }
         }
 
-        // 音乐播放器核心函数（与之前完全一致）
+        // ========== 音乐播放器核心函数 ==========
         const songs = [
             { name: "YELL - いきものがかり", mp3: "YELL - いきものがかり.mp3", lrc: "YELL - いきものがかり.lrc" },
             { name: "旅立ちの日に - さくら学院", mp3: "旅立ちの日に - さくら学院.mp3", lrc: "旅立ちの日に - さくら学院.lrc" },
@@ -877,7 +838,11 @@
                 if (originalLyrics) originalLyrics.style.display = 'none';
                 mobileContainer = document.createElement('div');
                 mobileContainer.className = 'mobile-container';
+                // 手机端：在播放器上方添加图片
                 mobileContainer.innerHTML = `
+                    <div class="mobile-top-image">
+                        <img src="卒業おめでとう(mobile).png" alt="卒業おめでとう">
+                    </div>
                     <div class="mobile-two-columns">
                         <div class="mobile-song-list" id="mobileSongList"></div>
                         <div class="mobile-lyrics-area" id="mobileLyricsArea"><div style="text-align:center; color:#aaa;">选择歌曲</div></div>
@@ -927,10 +892,73 @@
             }
         }
 
+        // 关闭视频按钮事件
         document.getElementById('closeVideoBtn')?.addEventListener('click', closeVideo);
+
+        // 手机端拖动功能（全局初始化，只在移动端生效）
+        function initDrag() {
+            const modal = document.getElementById('videoModal');
+            const dragHandle = modal.querySelector('.drag-handle');
+            if (!dragHandle || window.innerWidth > 768) return;
+
+            let startX, startY, startLeft, startTop, startBottom, startRight;
+            let isDragging = false;
+
+            const onTouchStart = (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                startX = touch.clientX;
+                startY = touch.clientY;
+                const style = window.getComputedStyle(modal);
+                // 如果当前是 bottom/right 定位，则转换为 left/top
+                if (style.left === 'auto' || style.left === '') {
+                    // 从 bottom/right 转换
+                    const rect = modal.getBoundingClientRect();
+                    startLeft = rect.left;
+                    startTop = rect.top;
+                    startBottom = null;
+                    startRight = null;
+                    modal.style.left = startLeft + 'px';
+                    modal.style.top = startTop + 'px';
+                    modal.style.right = 'auto';
+                    modal.style.bottom = 'auto';
+                } else {
+                    startLeft = parseFloat(style.left);
+                    startTop = parseFloat(style.top);
+                }
+                isDragging = true;
+            };
+
+            const onTouchMove = (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - startX;
+                const deltaY = touch.clientY - startY;
+                let newLeft = startLeft + deltaX;
+                let newTop = startTop + deltaY;
+                // 边界限制
+                const maxX = window.innerWidth - modal.offsetWidth;
+                const maxY = window.innerHeight - modal.offsetHeight;
+                newLeft = Math.min(Math.max(0, newLeft), maxX);
+                newTop = Math.min(Math.max(0, newTop), maxY);
+                modal.style.left = newLeft + 'px';
+                modal.style.top = newTop + 'px';
+            };
+
+            const onTouchEnd = () => {
+                isDragging = false;
+            };
+
+            dragHandle.addEventListener('touchstart', onTouchStart, { passive: false });
+            dragHandle.addEventListener('touchmove', onTouchMove, { passive: false });
+            dragHandle.addEventListener('touchend', onTouchEnd);
+        }
 
         // 主流程
         (async function() {
+            initDrag();
+
             const loadingOverlay = document.createElement('div');
             loadingOverlay.className = 'custom-modal-overlay';
             loadingOverlay.innerHTML = '<div class="custom-modal"><p>⏳ 加载验证数据中...</p></div>';
