@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🎵 🥳恭喜你发现了彩蛋🥳</title>
+    <title>🥳恭喜你发现了彩蛋🥳</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <style>
+        /* 所有样式与上一版完全相同，为节省篇幅此处不重复，但我会在最终输出中包含完整样式 */
         * {
             margin: 0;
             padding: 0;
@@ -385,7 +386,7 @@
     </div>
 
     <script>
-        // 特殊彩蛋映射
+        // 特殊彩蛋映射（仅针对那四位不需要日语验证的用户）
         const specialEggs = {
             "蒋珊": "全体起立！欢迎蒋哥莅临！！！👏👏",
             "魏艳": "热烈欢迎年度最佳小语种同事魏女士莅临寒舍👏👏👏",
@@ -460,12 +461,12 @@
 
         async function loadAuthData() {
             const response = await fetch('data.xlsx');
-            if (!response.ok) throw new Error('Excel 文件未找到');
+            if (!response.ok) throw new Error('Excel 文件未找到，请确保 data.xlsx 与 index.html 在同一目录');
             const data = await response.arrayBuffer();
             const workbook = XLSX.read(data, { type: 'array' });
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
             const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
-            if (!rows || rows.length < 2) throw new Error('Excel 至少两行数据');
+            if (!rows || rows.length < 2) throw new Error('Excel 至少需要两行数据');
             for (let i = 0; i < rows.length; i++) {
                 const row = rows[i];
                 if (row.length < 2) continue;
@@ -473,7 +474,8 @@
                 const answer = row[1] ? String(row[1]).trim() : '';
                 if (name && answer) authMap[name] = answer;
             }
-            if (Object.keys(authMap).length === 0) throw new Error('Excel 无有效数据');
+            if (Object.keys(authMap).length === 0) throw new Error('Excel 中未找到有效的姓名-答案对');
+            console.log('验证数据加载成功，共', Object.keys(authMap).length, '条');
         }
 
         async function loadSpecialEgg() {
@@ -484,6 +486,7 @@
             } catch(e) { return null; }
         }
 
+        // 验证流程：优先匹配特殊用户，然后走Excel
         async function startVerification() {
             await loadAuthData();
             let verifiedName = null;
@@ -491,11 +494,13 @@
                 const name = await customPrompt("名前は：");
                 if (name === null) continue;
                 const trimmedName = name.trim();
+                // 检查是否为特殊用户
                 if (specialEggs[trimmedName]) {
                     await customAlert(specialEggs[trimmedName]);
                     verifiedName = trimmedName;
                     break;
                 }
+                // 普通用户（包括徐梓琪）
                 const expectedAnswer = authMap[trimmedName];
                 if (expectedAnswer === undefined) {
                     await customAlert("ここから先は立ち入り禁止");
@@ -513,6 +518,7 @@
             return verifiedName;
         }
 
+        // 视频模块
         function closeVideo() {
             const modal = document.getElementById('videoModal');
             if (modal) modal.classList.remove('active');
@@ -808,6 +814,7 @@
 
         document.getElementById('closeVideoBtn')?.addEventListener('click', closeVideo);
 
+        // 主流程：特殊用户直接进入，普通用户先弹通用彩蛋再弹徐梓琪专属
         (async function() {
             const loadingOverlay = document.createElement('div');
             loadingOverlay.className = 'custom-modal-overlay';
@@ -817,10 +824,16 @@
                 await loadAuthData();
                 loadingOverlay.remove();
                 const verifiedName = await startVerification();
-                await customAlert("恭喜你解锁彩蛋！考试别紧张，听两首歌放松一下吧！");
-                if (verifiedName === "徐梓琪") {
-                    const specialMsg = await loadSpecialEgg();
-                    if (specialMsg) await customAlert(specialMsg);
+                // 判断是否为特殊用户（仅弹出了自己的彩蛋，不需要额外弹窗）
+                const isSpecial = specialEggs.hasOwnProperty(verifiedName);
+                if (!isSpecial) {
+                    // 普通用户：先弹通用彩蛋
+                    await customAlert("恭喜你解锁彩蛋！考试别紧张，听两首歌放松一下吧！");
+                    // 如果是徐梓琪，再弹专属文本
+                    if (verifiedName === "徐梓琪") {
+                        const specialMsg = await loadSpecialEgg();
+                        if (specialMsg) await customAlert(specialMsg);
+                    }
                 }
                 document.getElementById('mainContent').style.display = 'block';
                 initLayout();
