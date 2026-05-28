@@ -7,7 +7,67 @@
     <!-- 引入 SheetJS 库用于解析 Excel -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <style>
-        /* ========== 全部原有样式（电脑端 + 手机端） ========== */
+        /* ========== 全屏遮罩 + 自定义弹窗样式 ========== */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        .custom-modal {
+            background: #fff;
+            color: #333;
+            border-radius: 2rem;
+            padding: 1.5rem;
+            width: 85%;
+            max-width: 320px;
+            text-align: center;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+            font-family: system-ui, 'Segoe UI', sans-serif;
+        }
+        .custom-modal p {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        .custom-modal input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 2rem;
+            margin-bottom: 1rem;
+            outline: none;
+            text-align: center;
+        }
+        .custom-modal button {
+            background: #0077b6;
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        .custom-modal button:hover {
+            background: #023e8a;
+        }
+        .error-msg {
+            color: #d32f2f;
+            font-size: 0.8rem;
+            margin-top: -0.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        /* ========== 原有样式（音乐播放器相关，电脑端+手机端） ========== */
         * {
             margin: 0;
             padding: 0;
@@ -267,27 +327,15 @@
             }
         }
 
-        /* 加载提示样式 */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 1.2rem;
-            z-index: 1000;
-            backdrop-filter: blur(5px);
+        /* 主内容初始隐藏 */
+        #mainContent {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <!-- 主内容初始隐藏 -->
-    <div id="mainContent" style="display: none;">
+    <!-- 主内容（音乐播放器） -->
+    <div id="mainContent">
         <!-- 电脑端卡片 -->
         <div class="card">
             <div class="title-section">
@@ -313,97 +361,129 @@
         // 全局映射表
         let authMap = {};
 
-        // 彩蛋消息
-        const EGG_MESSAGE = "恭喜你解锁彩蛋！考试别紧张，听两首歌放松一下吧！";
+        // 自定义弹窗函数 (模拟 prompt，返回 Promise<string | null>)
+        function customPrompt(question, isPassword = false) {
+            return new Promise((resolve) => {
+                // 创建遮罩
+                const overlay = document.createElement('div');
+                overlay.className = 'custom-modal-overlay';
+                const modal = document.createElement('div');
+                modal.className = 'custom-modal';
+                modal.innerHTML = `
+                    <p>${question}</p>
+                    <input type="${isPassword ? 'password' : 'text'}" id="customInput" autocomplete="off">
+                    <div class="error-msg" id="errorMsg" style="display:none;"></div>
+                    <div>
+                        <button id="confirmBtn">确定</button>
+                    </div>
+                `;
+                overlay.appendChild(modal);
+                document.body.appendChild(overlay);
+                const input = modal.querySelector('#customInput');
+                const confirmBtn = modal.querySelector('#confirmBtn');
+                const errorMsgDiv = modal.querySelector('#errorMsg');
+                input.focus();
 
-        // 加载 Excel 文件并构建映射
-        async function loadAuthData() {
-            return new Promise((resolve, reject) => {
-                fetch('data.xlsx')
-                    .then(response => {
-                        if (!response.ok) throw new Error('Excel 文件未找到，请确保 data.xlsx 与 index.html 在同一目录');
-                        return response.arrayBuffer();
-                    })
-                    .then(data => {
-                        const workbook = XLSX.read(data, { type: 'array' });
-                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                        const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
-                        if (!rows || rows.length < 2) {
-                            throw new Error('Excel 至少需要两行数据（表头+数据）');
-                        }
-                        // 假设第一列是姓名，第二列是书签（日语答案）
-                        // 跳过第一行表头（如果有）
-                        const startRow = 0; // 如果第一行是表头，改为 1
-                        for (let i = startRow; i < rows.length; i++) {
-                            const row = rows[i];
-                            if (row.length < 2) continue;
-                            const name = row[0] ? String(row[0]).trim() : '';
-                            const answer = row[1] ? String(row[1]).trim() : '';
-                            if (name && answer) {
-                                authMap[name] = answer;
-                            }
-                        }
-                        if (Object.keys(authMap).length === 0) {
-                            throw new Error('Excel 中未找到有效的姓名-答案对');
-                        }
-                        console.log('验证数据加载成功，共', Object.keys(authMap).length, '条');
-                        resolve();
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        alert('验证数据加载失败：' + err.message + '\n请确保 data.xlsx 文件存在且格式正确（第一列姓名，第二列书签）');
-                        reject(err);
-                    });
+                const cleanup = () => {
+                    overlay.remove();
+                };
+
+                const submit = () => {
+                    const val = input.value.trim();
+                    if (val === "") {
+                        errorMsgDiv.textContent = "请输入内容";
+                        errorMsgDiv.style.display = "block";
+                        return;
+                    }
+                    cleanup();
+                    resolve(val);
+                };
+
+                confirmBtn.onclick = submit;
+                input.onkeypress = (e) => {
+                    if (e.key === 'Enter') submit();
+                };
+                // 点击遮罩不关闭，强制用户输入
             });
         }
 
-        // 验证流程
+        // 自定义 alert
+        function customAlert(message) {
+            return new Promise((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.className = 'custom-modal-overlay';
+                const modal = document.createElement('div');
+                modal.className = 'custom-modal';
+                modal.innerHTML = `
+                    <p>${message}</p>
+                    <button id="alertOkBtn">确定</button>
+                `;
+                overlay.appendChild(modal);
+                document.body.appendChild(overlay);
+                const okBtn = modal.querySelector('#alertOkBtn');
+                okBtn.onclick = () => {
+                    overlay.remove();
+                    resolve();
+                };
+            });
+        }
+
+        // 加载 Excel 文件并构建映射
+        async function loadAuthData() {
+            const response = await fetch('data.xlsx');
+            if (!response.ok) throw new Error('Excel 文件未找到，请确保 data.xlsx 与 index.html 在同一目录');
+            const data = await response.arrayBuffer();
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
+            if (!rows || rows.length < 2) throw new Error('Excel 至少需要两行数据');
+            // 假设第一行可能是表头，跳过空行
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                if (row.length < 2) continue;
+                const name = row[0] ? String(row[0]).trim() : '';
+                const answer = row[1] ? String(row[1]).trim() : '';
+                if (name && answer) {
+                    authMap[name] = answer;
+                }
+            }
+            if (Object.keys(authMap).length === 0) throw new Error('Excel 中未找到有效的姓名-答案对');
+            console.log('验证数据加载成功，共', Object.keys(authMap).length, '条');
+        }
+
+        // 验证流程（循环直到正确）
         async function startVerification() {
             // 先加载数据
             await loadAuthData();
 
-            // 第一步：问姓名
-            let name = prompt("名前は：");
-            if (name === null) {
-                document.body.innerHTML = "<div style='text-align:center; margin-top:20vh; color:white;'>アクセスがキャンセルされました。</div>";
-                return false;
-            }
-            name = name.trim();
-            if (name === "") {
-                alert("名前を入力してください。");
-                return startVerification();
-            }
+            while (true) {
+                // 第一步：问姓名
+                const name = await customPrompt("名前は：");
+                if (name === null) continue; // 理论上不会 null，因为强制输入
 
-            const expectedAnswer = authMap[name];
-            if (expectedAnswer === undefined) {
-                alert("ここから先は立ち入り禁止");
-                document.body.innerHTML = "<div style='text-align:center; margin-top:20vh; color:white;'>🚫 ここから先は立ち入り禁止 🚫</div>";
-                return false;
-            }
+                const expectedAnswer = authMap[name];
+                if (expectedAnswer === undefined) {
+                    await customAlert("ここから先は立ち入り禁止");
+                    continue; // 重新开始
+                }
 
-            // 第二步：问日语
-            let userAnswer = prompt("先生からもらった日本語は：");
-            if (userAnswer === null) {
-                document.body.innerHTML = "<div style='text-align:center; margin-top:20vh; color:white;'>アクセスがキャンセルされました。</div>";
-                return false;
-            }
-            userAnswer = userAnswer.trim();
-            if (userAnswer === "") {
-                alert("日本語を入力してください。");
-                return startVerification();
-            }
+                // 第二步：问日语
+                const userAnswer = await customPrompt("先生からもらった日本語は：");
+                if (userAnswer === null) continue;
 
-            if (userAnswer !== expectedAnswer) {
-                alert("输入有误哦");
-                return startVerification();
-            }
+                if (userAnswer !== expectedAnswer) {
+                    await customAlert("输入有误哦");
+                    continue;
+                }
 
-            // 验证通过，显示彩蛋弹窗
-            alert(EGG_MESSAGE);
+                // 验证通过，显示彩蛋消息
+                await customAlert("恭喜你解锁彩蛋！考试别紧张，听两首歌放松一下吧！");
+                break; // 退出循环
+            }
             return true;
         }
 
-        // 以下是你原有的音乐播放器所有 JavaScript 代码（稍作调整，确保初始化正确）
+        // 以下是你原有的音乐播放器所有 JavaScript 代码（保持不变，但需要确保 initLayout 不重复执行）
         const songs = [
             { name: "YELL - いきものがかり", mp3: "YELL - いきものがかり.mp3", lrc: "YELL - いきものがかり.lrc" },
             { name: "旅立ちの日に - さくら学院", mp3: "旅立ちの日に - さくら学院.mp3", lrc: "旅立ちの日に - さくら学院.lrc" },
@@ -417,7 +497,6 @@
         let currentLineIndex = -1;
         let isLyricsReady = false;
 
-        // 手机端 DOM 元素
         let mobileContainer = null;
         let mobileSongList = null;
         let mobileLyricsArea = null;
@@ -595,7 +674,6 @@
                 }
             }
             
-            // 更新按钮高亮
             if (window.innerWidth <= 768) {
                 const btns = document.querySelectorAll('.mobile-song-btn');
                 btns.forEach((btn, i) => {
@@ -648,13 +726,11 @@
 
         function initLayout() {
             if (window.innerWidth <= 768) {
-                // 隐藏电脑端原有 audio 和 lyrics
                 const originalAudio = document.getElementById('audioPlayer');
                 const originalLyrics = document.getElementById('lyricsContainer');
                 if (originalAudio) originalAudio.style.display = 'none';
                 if (originalLyrics) originalLyrics.style.display = 'none';
                 
-                // 创建手机端容器
                 mobileContainer = document.createElement('div');
                 mobileContainer.className = 'mobile-container';
                 mobileContainer.innerHTML = `
@@ -697,27 +773,28 @@
             }
         }
 
-        // 启动验证，通过后显示主内容并初始化音乐播放器
+        // 启动流程：验证通过后才显示主内容并初始化音乐播放器
         (async function() {
-            // 显示加载中遮罩（可选）
-            const loadingDiv = document.createElement('div');
-            loadingDiv.className = 'loading-overlay';
-            loadingDiv.innerHTML = '⏳ 加载验证数据...';
-            document.body.appendChild(loadingDiv);
-            
-            const verified = await startVerification().catch(err => {
-                loadingDiv.remove();
-                return false;
-            });
-            loadingDiv.remove();
-            
-            if (verified) {
-                document.getElementById('mainContent').style.display = 'block';
-                // 由于手机端容器是动态创建的，需要在显示后调用 initLayout
-                initLayout();
-            } else {
-                // 验证失败，页面已经显示错误信息，不再显示音乐播放器
-                document.body.innerHTML = '<div style="text-align:center; margin-top:20vh; color:white;">アクセスが拒否されました。</div>';
+            // 显示加载提示（自定义弹窗风格）
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.className = 'custom-modal-overlay';
+            loadingOverlay.innerHTML = '<div class="custom-modal"><p>⏳ 加载验证数据中...</p></div>';
+            document.body.appendChild(loadingOverlay);
+            try {
+                await loadAuthData();
+                loadingOverlay.remove();
+                const verified = await startVerification();
+                if (verified) {
+                    document.getElementById('mainContent').style.display = 'block';
+                    initLayout();
+                } else {
+                    // 理论上不会走到这里
+                    document.body.innerHTML = '<div style="text-align:center; margin-top:20vh; color:white;">アクセスが拒否されました。</div>';
+                }
+            } catch (err) {
+                loadingOverlay.remove();
+                await customAlert('数据加载失败: ' + err.message);
+                document.body.innerHTML = '<div style="text-align:center; margin-top:20vh; color:white;">系统错误，请稍后重试。</div>';
             }
         })();
     </script>
