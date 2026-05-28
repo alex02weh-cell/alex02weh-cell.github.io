@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🥳恭喜你发现了彩蛋🥳</title>
+    <title>💐恭喜你发现了彩蛋💐</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
@@ -28,21 +28,36 @@
             padding: 1rem;
             position: relative;
         }
+        /* 电脑端：主容器为 flex 行，左侧卡片，右侧独立图片 */
+        .pc-main-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+        }
         .card {
             background: rgba(0, 0, 0, 0.35);
             backdrop-filter: blur(6px);
             border-radius: 2rem;
             padding: 1.5rem;
             width: 100%;
-            max-width: 550px;  /* 稍微加宽以容纳右侧图片 */
+            max-width: 450px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.2);
             border: 1px solid rgba(255,255,255,0.2);
             color: white;
-            margin-left: 0;
-            margin-right: auto;
             display: flex;
             flex-direction: column;
             align-items: center;
+        }
+        .pc-side-image {
+            flex-shrink: 0;
+            max-width: 130px;
+        }
+        .pc-side-image img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            display: block;
         }
         .title-section {
             text-align: center;
@@ -58,32 +73,14 @@
             color: rgba(255,255,255,0.8);
             font-size: 0.8rem;
         }
-        /* 电脑端：播放器 + 图片 并排 */
-        .pc-player-wrapper {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            width: 100%;
-            margin-bottom: 1.5rem;
-        }
         .music-player {
             background: rgba(255, 255, 255, 0.5);
             backdrop-filter: blur(4px);
             border-radius: 1.5rem;
             padding: 1rem;
-            flex: 1;
-            text-align: center;
-        }
-        .pc-side-image {
-            flex-shrink: 0;
-            width: auto;
-            max-width: 120px;
-        }
-        .pc-side-image img {
+            margin-bottom: 1.5rem;
             width: 100%;
-            height: auto;
-            border-radius: 12px;
-            display: block;
+            text-align: center;
         }
         .song-switch {
             display: flex;
@@ -144,7 +141,6 @@
             font-size: 0.85rem;
             line-height: 1.6;
             color: #f0f0f0;
-            margin-top: 0.8rem;
             width: 100%;
             text-align: left;
         }
@@ -219,14 +215,26 @@
                 justify-content: center;
                 align-items: flex-end;
                 padding: 1rem;
+                flex-direction: column;
+                justify-content: flex-end;
             }
-            .card {
-                display: none;
+            /* 手机端独立图片：位于整个音乐模块上方，不嵌入内部 */
+            .mobile-top-image {
+                width: 100%;
+                display: flex;
+                justify-content: flex-start;
+                margin-bottom: 10px;
+                max-width: 150px;
+            }
+            .mobile-top-image img {
+                width: 100%;
+                height: auto;
+                border-radius: 12px;
+                display: block;
             }
             .mobile-container {
                 width: 95%;
                 max-width: 450px;
-                margin-bottom: 4vh;
                 background: rgba(0, 0, 0, 0.4);
                 backdrop-filter: blur(8px);
                 border-radius: 1.8rem;
@@ -234,19 +242,7 @@
                 border: 1px solid rgba(255,255,255,0.2);
                 display: flex;
                 flex-direction: column;
-                align-items: flex-start;  /* 内容靠左 */
-            }
-            /* 手机端图片放在播放器上方，靠左，宽度不超过150px */
-            .mobile-top-image {
-                margin-bottom: 10px;
-                max-width: 150px;
-                width: auto;
-            }
-            .mobile-top-image img {
-                width: 100%;
-                height: auto;
-                border-radius: 12px;
-                display: block;
+                align-items: flex-start;
             }
             .mobile-two-columns {
                 display: flex;
@@ -422,32 +418,35 @@
     </style>
 </head>
 <body>
-    <!-- 视频浮层：包含拖动条 -->
+    <!-- 视频浮层 -->
     <div id="videoModal" class="video-modal">
         <div class="drag-handle">⋮⋮ 拖动移动窗口 ⋮⋮</div>
         <button class="close-video" id="closeVideoBtn">✕</button>
         <div id="videoContainer"></div>
     </div>
-    <div id="mainContent">
-        <div class="card">
-            <div class="title-section">
-                <h1>🎵 音楽を楽しもう！🎵</h1>
-                <div class="sub">切换歌曲，歌词自动滚动</div>
-            </div>
-            <!-- 电脑端：播放器 + 右侧图片 -->
-            <div class="pc-player-wrapper">
+
+    <!-- 电脑端主内容（默认显示，手机端会被覆盖） -->
+    <div id="mainContent" style="display: none;">
+        <div class="pc-main-wrapper">
+            <!-- 音乐卡片 -->
+            <div class="card">
+                <div class="title-section">
+                    <h1>🎵 音楽を楽しもう！🎵</h1>
+                    <div class="sub">切换歌曲，歌词自动滚动</div>
+                </div>
                 <div class="music-player">
                     <div class="song-switch" id="songSwitch"></div>
                     <div class="current-song" id="currentSongLabel">加载中...</div>
                     <audio id="audioPlayer" controls></audio>
                     <button class="mv-button" id="watchMVBtn">🎬 观看MV</button>
                 </div>
-                <div class="pc-side-image">
-                    <img src="卒業おめでとう(pc).png" alt="卒業おめでとう">
+                <div class="lyrics-container" id="lyricsContainer">
+                    <div style="text-align:center; color:#aaa;">选择一首歌曲开始</div>
                 </div>
             </div>
-            <div class="lyrics-container" id="lyricsContainer">
-                <div style="text-align:center; color:#aaa;">选择一首歌曲开始</div>
+            <!-- 电脑端独立图片（右侧） -->
+            <div class="pc-side-image">
+                <img src="卒業おめでとう(pc).png" alt="卒業おめでとう">
             </div>
         </div>
     </div>
@@ -477,6 +476,7 @@
         let currentLineIndex = -1;
         let isLyricsReady = false;
         let mobileContainer = null, mobileSongList = null, mobileLyricsArea = null, mobileCurrentSongLabel = null, mobileAudio = null;
+        let mobileImageDiv = null;
 
         // 自定义弹窗
         function customPrompt(question, isPassword = false) {
@@ -592,7 +592,6 @@
             const container = document.getElementById('videoContainer');
             if (container) container.innerHTML = '';
             isVideoOpen = false;
-            // 手机端重置位置到右下角
             if (window.innerWidth <= 768) {
                 modal.style.top = '';
                 modal.style.left = '';
@@ -832,17 +831,21 @@
 
         function initLayout() {
             if (window.innerWidth <= 768) {
-                const originalAudio = document.getElementById('audioPlayer');
-                const originalLyrics = document.getElementById('lyricsContainer');
-                if (originalAudio) originalAudio.style.display = 'none';
-                if (originalLyrics) originalLyrics.style.display = 'none';
+                // 隐藏电脑端内容
+                const pcWrapper = document.querySelector('.pc-main-wrapper');
+                if (pcWrapper) pcWrapper.style.display = 'none';
+                
+                // 创建手机端独立图片（如果尚未创建）
+                if (!mobileImageDiv) {
+                    mobileImageDiv = document.createElement('div');
+                    mobileImageDiv.className = 'mobile-top-image';
+                    mobileImageDiv.innerHTML = '<img src="卒業おめでとう(mobile).png" alt="卒業おめでとう">';
+                    document.body.appendChild(mobileImageDiv);
+                }
+                // 创建手机端容器
                 mobileContainer = document.createElement('div');
                 mobileContainer.className = 'mobile-container';
-                // 手机端：在播放器上方添加图片
                 mobileContainer.innerHTML = `
-                    <div class="mobile-top-image">
-                        <img src="卒業おめでとう(mobile).png" alt="卒業おめでとう">
-                    </div>
                     <div class="mobile-two-columns">
                         <div class="mobile-song-list" id="mobileSongList"></div>
                         <div class="mobile-lyrics-area" id="mobileLyricsArea"><div style="text-align:center; color:#aaa;">选择歌曲</div></div>
@@ -873,6 +876,11 @@
                     });
                 }
             } else {
+                // 电脑端确保手机端元素被移除（如果有）
+                if (mobileContainer) mobileContainer.remove();
+                if (mobileImageDiv) mobileImageDiv.remove();
+                const pcWrapper = document.querySelector('.pc-main-wrapper');
+                if (pcWrapper) pcWrapper.style.display = 'flex';
                 audio = document.getElementById('audioPlayer');
                 initPcButtons();
                 audio.addEventListener('timeupdate', () => {
@@ -892,43 +900,28 @@
             }
         }
 
-        // 关闭视频按钮事件
         document.getElementById('closeVideoBtn')?.addEventListener('click', closeVideo);
 
-        // 手机端拖动功能（全局初始化，只在移动端生效）
         function initDrag() {
             const modal = document.getElementById('videoModal');
             const dragHandle = modal.querySelector('.drag-handle');
             if (!dragHandle || window.innerWidth > 768) return;
-
-            let startX, startY, startLeft, startTop, startBottom, startRight;
+            let startX, startY, startLeft, startTop;
             let isDragging = false;
-
             const onTouchStart = (e) => {
                 e.preventDefault();
                 const touch = e.touches[0];
                 startX = touch.clientX;
                 startY = touch.clientY;
-                const style = window.getComputedStyle(modal);
-                // 如果当前是 bottom/right 定位，则转换为 left/top
-                if (style.left === 'auto' || style.left === '') {
-                    // 从 bottom/right 转换
-                    const rect = modal.getBoundingClientRect();
-                    startLeft = rect.left;
-                    startTop = rect.top;
-                    startBottom = null;
-                    startRight = null;
-                    modal.style.left = startLeft + 'px';
-                    modal.style.top = startTop + 'px';
-                    modal.style.right = 'auto';
-                    modal.style.bottom = 'auto';
-                } else {
-                    startLeft = parseFloat(style.left);
-                    startTop = parseFloat(style.top);
-                }
+                const rect = modal.getBoundingClientRect();
+                startLeft = rect.left;
+                startTop = rect.top;
+                modal.style.left = startLeft + 'px';
+                modal.style.top = startTop + 'px';
+                modal.style.right = 'auto';
+                modal.style.bottom = 'auto';
                 isDragging = true;
             };
-
             const onTouchMove = (e) => {
                 if (!isDragging) return;
                 e.preventDefault();
@@ -937,7 +930,6 @@
                 const deltaY = touch.clientY - startY;
                 let newLeft = startLeft + deltaX;
                 let newTop = startTop + deltaY;
-                // 边界限制
                 const maxX = window.innerWidth - modal.offsetWidth;
                 const maxY = window.innerHeight - modal.offsetHeight;
                 newLeft = Math.min(Math.max(0, newLeft), maxX);
@@ -945,20 +937,16 @@
                 modal.style.left = newLeft + 'px';
                 modal.style.top = newTop + 'px';
             };
-
             const onTouchEnd = () => {
                 isDragging = false;
             };
-
             dragHandle.addEventListener('touchstart', onTouchStart, { passive: false });
             dragHandle.addEventListener('touchmove', onTouchMove, { passive: false });
             dragHandle.addEventListener('touchend', onTouchEnd);
         }
 
-        // 主流程
         (async function() {
             initDrag();
-
             const loadingOverlay = document.createElement('div');
             loadingOverlay.className = 'custom-modal-overlay';
             loadingOverlay.innerHTML = '<div class="custom-modal"><p>⏳ 加载验证数据中...</p></div>';
