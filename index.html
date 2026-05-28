@@ -3,82 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🎵 音乐 · 彩蛋验证</title>
-    <!-- SheetJS 库 -->
+    <title>🎵 🥳恭喜你发现了彩蛋🥳</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
-    <!-- Video.js 库（用于 HLS 播放） -->
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <style>
-        /* ========== 全屏遮罩 + 自定义弹窗样式（不变） ========== */
-        .custom-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(5px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-        }
-        .custom-modal {
-            background: #fff;
-            color: #333;
-            border-radius: 2rem;
-            padding: 1.5rem;
-            width: 85%;
-            max-width: 320px;
-            text-align: center;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
-            font-family: system-ui, 'Segoe UI', sans-serif;
-        }
-        .custom-modal p {
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-            font-weight: 500;
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-        .custom-modal input {
-            width: 100%;
-            padding: 10px;
-            font-size: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 2rem;
-            margin-bottom: 1rem;
-            outline: none;
-            text-align: center;
-        }
-        .custom-modal button {
-            background: #0077b6;
-            border: none;
-            color: white;
-            padding: 8px 20px;
-            border-radius: 40px;
-            font-size: 1rem;
-            cursor: pointer;
-            margin: 0 5px;
-        }
-        .custom-modal button:hover {
-            background: #023e8a;
-        }
-        .error-msg {
-            color: #d32f2f;
-            font-size: 0.8rem;
-            margin-top: -0.5rem;
-            margin-bottom: 0.8rem;
-        }
-
-        /* ========== 电脑端卡片样式：半透明 + 毛玻璃，降低不透明度 ========== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             background-image: url('02.jpg');
             background-size: cover;
@@ -94,10 +28,8 @@
             padding: 1rem;
             position: relative;
         }
-
-        /* 卡片背景：深色半透明，毛玻璃模糊 */
         .card {
-            background: rgba(0, 0, 0, 0.35);     /* 比之前更透明 */
+            background: rgba(0, 0, 0, 0.35);
             backdrop-filter: blur(6px);
             border-radius: 2rem;
             padding: 1.5rem;
@@ -112,7 +44,6 @@
             flex-direction: column;
             align-items: center;
         }
-
         .title-section {
             text-align: center;
             margin-bottom: 1.5rem;
@@ -127,8 +58,6 @@
             color: rgba(255,255,255,0.8);
             font-size: 0.8rem;
         }
-
-        /* 音乐播放器模块：白色半透明，降低不透明度 */
         .music-player {
             background: rgba(255, 255, 255, 0.5);
             backdrop-filter: blur(4px);
@@ -139,7 +68,6 @@
             width: 100%;
             text-align: center;
         }
-
         .song-switch {
             display: flex;
             justify-content: center;
@@ -225,8 +153,6 @@
             background: #ffb703;
             border-radius: 10px;
         }
-
-        /* 电脑端视频浮层：居中，尺寸放大 */
         .video-modal {
             position: fixed;
             top: 50%;
@@ -265,8 +191,6 @@
             width: 100%;
             border-radius: 12px;
         }
-
-        /* 手机端样式：保持原有小浮层（右下角） */
         @media (max-width: 768px) {
             body {
                 background-image: url('mobile-02.jpg');
@@ -359,7 +283,6 @@
                 font-size: 0.7rem;
                 margin-top: 6px;
             }
-            /* 手机端视频浮层（右下角小窗） */
             .video-modal {
                 position: fixed;
                 bottom: 20px;
@@ -373,20 +296,76 @@
                 padding: 0.5rem;
             }
         }
-
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        .custom-modal {
+            background: #fff;
+            color: #333;
+            border-radius: 2rem;
+            padding: 1.5rem;
+            width: 85%;
+            max-width: 320px;
+            text-align: center;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+            font-family: system-ui, 'Segoe UI', sans-serif;
+        }
+        .custom-modal p {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .custom-modal input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 2rem;
+            margin-bottom: 1rem;
+            outline: none;
+            text-align: center;
+        }
+        .custom-modal button {
+            background: #0077b6;
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        .custom-modal button:hover {
+            background: #023e8a;
+        }
+        .error-msg {
+            color: #d32f2f;
+            font-size: 0.8rem;
+            margin-top: -0.5rem;
+            margin-bottom: 0.8rem;
+        }
         #mainContent {
             display: none;
         }
     </style>
 </head>
 <body>
-    <!-- 视频浮层容器（动态创建也行，但为了方便，先写好） -->
     <div id="videoModal" class="video-modal">
         <button class="close-video" id="closeVideoBtn">✕</button>
         <div id="videoContainer"></div>
     </div>
-
-    <!-- 主内容（音乐播放器） -->
     <div id="mainContent">
         <div class="card">
             <div class="title-section">
@@ -396,10 +375,7 @@
             <div class="music-player">
                 <div class="song-switch" id="songSwitch"></div>
                 <div class="current-song" id="currentSongLabel">加载中...</div>
-                <audio id="audioPlayer" controls>
-                    <source src="" type="audio/mpeg">
-                    您的浏览器不支持 audio 元素。
-                </audio>
+                <audio id="audioPlayer" controls></audio>
                 <button class="mv-button" id="watchMVBtn">🎬 观看MV</button>
             </div>
             <div class="lyrics-container" id="lyricsContainer">
@@ -409,19 +385,32 @@
     </div>
 
     <script>
-        // MV 映射表（YELL已配置，其他预留）
+        // 特殊彩蛋映射
+        const specialEggs = {
+            "蒋珊": "全体起立！欢迎蒋哥莅临！！！👏👏",
+            "魏艳": "热烈欢迎年度最佳小语种同事魏女士莅临寒舍👏👏👏",
+            "于颖": "热烈欢迎年度最佳小语种同事于女士莅临寒舍👏👏👏",
+            "安尔蒂西亚": "你是最屌的吊毛！！！哈哈哈哈哈"
+        };
+
         const mvMap = {
             "YELL - いきものがかり": "https://mv6.music.tc.qq.com/80E13F7987FB96C2F4531383C13025CF0717B6F8D446EA1244F8328EF243610A2E7696DD1A66447ECDE31EB41749DB03ZZqqmusic_default__v21ea05cc4/qmmv_0a6bbdhbbqbvisila4gqmdafb4evhwdoux4h7tnti4dqobyhb4ea.f9934.m3u8",
             "旅立ちの日に - さくら学院": "",
             "plenty - 人間そっくり": ""
         };
 
-        // 全局变量
         let authMap = {};
         let currentVideoPlayer = null;
         let isVideoOpen = false;
+        let audio = null;
+        let currentSongIndex = 0;
+        let currentLyrics = [];
+        let lyricElements = [];
+        let currentLineIndex = -1;
+        let isLyricsReady = false;
+        let mobileContainer = null, mobileSongList = null, mobileLyricsArea = null, mobileCurrentSongLabel = null, mobileAudio = null;
 
-        // 自定义弹窗（保持不变）
+        // 自定义弹窗
         function customPrompt(question, isPassword = false) {
             return new Promise((resolve) => {
                 const overlay = document.createElement('div');
@@ -469,7 +458,6 @@
             });
         }
 
-        // 加载 Excel
         async function loadAuthData() {
             const response = await fetch('data.xlsx');
             if (!response.ok) throw new Error('Excel 文件未找到');
@@ -502,7 +490,13 @@
             while (true) {
                 const name = await customPrompt("名前は：");
                 if (name === null) continue;
-                const expectedAnswer = authMap[name];
+                const trimmedName = name.trim();
+                if (specialEggs[trimmedName]) {
+                    await customAlert(specialEggs[trimmedName]);
+                    verifiedName = trimmedName;
+                    break;
+                }
+                const expectedAnswer = authMap[trimmedName];
                 if (expectedAnswer === undefined) {
                     await customAlert("ここから先は立ち入り禁止");
                     continue;
@@ -513,13 +507,12 @@
                     await customAlert("输入有误哦");
                     continue;
                 }
-                verifiedName = name;
+                verifiedName = trimmedName;
                 break;
             }
             return verifiedName;
         }
 
-        // ========== 视频模块（修复重复打开bug） ==========
         function closeVideo() {
             const modal = document.getElementById('videoModal');
             if (modal) modal.classList.remove('active');
@@ -527,7 +520,6 @@
                 currentVideoPlayer.dispose();
                 currentVideoPlayer = null;
             }
-            // 清空视频容器
             const container = document.getElementById('videoContainer');
             if (container) container.innerHTML = '';
             isVideoOpen = false;
@@ -538,13 +530,9 @@
                 customAlert("抱歉，这首歌的MV暂时不可用。");
                 return;
             }
-            // 如果已经打开，先关闭再重新打开（确保刷新）
-            if (isVideoOpen) {
-                closeVideo();
-            }
+            if (isVideoOpen) closeVideo();
             const modal = document.getElementById('videoModal');
             const container = document.getElementById('videoContainer');
-            // 清空容器，创建新的 video 元素
             container.innerHTML = '';
             const videoElem = document.createElement('video');
             videoElem.id = 'mvPlayer';
@@ -554,7 +542,6 @@
             videoElem.setAttribute('playsinline', 'true');
             videoElem.style.width = '100%';
             container.appendChild(videoElem);
-            // 初始化 video.js 播放 HLS
             currentVideoPlayer = videojs(videoElem, {
                 sources: [{ src: mvUrl, type: 'application/x-mpegURL' }],
                 autoplay: true,
@@ -562,37 +549,21 @@
                 fluid: true
             });
             currentVideoPlayer.on('error', function() {
-                console.error("视频加载错误");
                 customAlert("MV播放失败，可能是链接失效或格式不支持。");
                 closeVideo();
             });
             modal.classList.add('active');
             isVideoOpen = true;
-            // 音乐暂停
-            if (audio && !audio.paused) {
-                audio.pause();
-            }
+            if (audio && !audio.paused) audio.pause();
         }
 
-        // 绑定关闭按钮事件
-        document.getElementById('closeVideoBtn')?.addEventListener('click', closeVideo);
-
-        // ========== 音乐播放器原有逻辑（整合 MV 按钮） ==========
+        // 音乐播放器核心函数
         const songs = [
             { name: "YELL - いきものがかり", mp3: "YELL - いきものがかり.mp3", lrc: "YELL - いきものがかり.lrc" },
             { name: "旅立ちの日に - さくら学院", mp3: "旅立ちの日に - さくら学院.mp3", lrc: "旅立ちの日に - さくら学院.lrc" },
             { name: "plenty - 人間そっくり", mp3: "plenty - 人間そっくり.mp3", lrc: "plenty - 人間そっくり.lrc" }
         ];
 
-        let audio = null;
-        let currentSongIndex = 0;
-        let currentLyrics = [];
-        let lyricElements = [];
-        let currentLineIndex = -1;
-        let isLyricsReady = false;
-        let mobileContainer = null, mobileSongList = null, mobileLyricsArea = null, mobileCurrentSongLabel = null, mobileAudio = null;
-
-        // 解析 LRC（与原相同，略）
         function parseLrc(lrcText) {
             const lines = lrcText.split(/\r?\n/);
             const result = [];
@@ -779,7 +750,6 @@
 
         function initLayout() {
             if (window.innerWidth <= 768) {
-                // 手机端动态创建
                 const originalAudio = document.getElementById('audioPlayer');
                 const originalLyrics = document.getElementById('lyricsContainer');
                 if (originalAudio) originalAudio.style.display = 'none';
@@ -836,7 +806,8 @@
             }
         }
 
-        // 启动验证
+        document.getElementById('closeVideoBtn')?.addEventListener('click', closeVideo);
+
         (async function() {
             const loadingOverlay = document.createElement('div');
             loadingOverlay.className = 'custom-modal-overlay';
