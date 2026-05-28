@@ -36,6 +36,8 @@
             margin-bottom: 1rem;
             font-size: 1.1rem;
             font-weight: 500;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
         .custom-modal input {
             width: 100%;
@@ -364,7 +366,6 @@
         // 自定义弹窗函数 (模拟 prompt，返回 Promise<string | null>)
         function customPrompt(question, isPassword = false) {
             return new Promise((resolve) => {
-                // 创建遮罩
                 const overlay = document.createElement('div');
                 overlay.className = 'custom-modal-overlay';
                 const modal = document.createElement('div');
@@ -403,7 +404,6 @@
                 input.onkeypress = (e) => {
                     if (e.key === 'Enter') submit();
                 };
-                // 点击遮罩不关闭，强制用户输入
             });
         }
 
@@ -415,7 +415,7 @@
                 const modal = document.createElement('div');
                 modal.className = 'custom-modal';
                 modal.innerHTML = `
-                    <p>${message}</p>
+                    <p>${message.replace(/\n/g, '<br>')}</p>
                     <button id="alertOkBtn">确定</button>
                 `;
                 overlay.appendChild(modal);
@@ -437,7 +437,6 @@
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
             const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
             if (!rows || rows.length < 2) throw new Error('Excel 至少需要两行数据');
-            // 假设第一行可能是表头，跳过空行
             for (let i = 0; i < rows.length; i++) {
                 const row = rows[i];
                 if (row.length < 2) continue;
@@ -451,23 +450,34 @@
             console.log('验证数据加载成功，共', Object.keys(authMap).length, '条');
         }
 
+        // 读取专属彩蛋文本
+        async function loadSpecialEgg() {
+            try {
+                const response = await fetch('xzq.txt');
+                if (!response.ok) return null;
+                const text = await response.text();
+                return text.trim();
+            } catch (e) {
+                console.error('读取专属彩蛋失败', e);
+                return null;
+            }
+        }
+
         // 验证流程（循环直到正确）
         async function startVerification() {
-            // 先加载数据
             await loadAuthData();
+            let verifiedName = null;
 
             while (true) {
-                // 第一步：问姓名
                 const name = await customPrompt("名前は：");
-                if (name === null) continue; // 理论上不会 null，因为强制输入
+                if (name === null) continue;
 
                 const expectedAnswer = authMap[name];
                 if (expectedAnswer === undefined) {
                     await customAlert("ここから先は立ち入り禁止");
-                    continue; // 重新开始
+                    continue;
                 }
 
-                // 第二步：问日语
                 const userAnswer = await customPrompt("先生からもらった日本語は：");
                 if (userAnswer === null) continue;
 
@@ -476,14 +486,14 @@
                     continue;
                 }
 
-                // 验证通过，显示彩蛋消息
-                await customAlert("恭喜你解锁彩蛋！考试别紧张，听两首歌放松一下吧！");
-                break; // 退出循环
+                // 验证通过，记录姓名
+                verifiedName = name;
+                break;
             }
-            return true;
+            return verifiedName;
         }
 
-        // 以下是你原有的音乐播放器所有 JavaScript 代码（保持不变，但需要确保 initLayout 不重复执行）
+        // 以下是你原有的音乐播放器所有 JavaScript 代码
         const songs = [
             { name: "YELL - いきものがかり", mp3: "YELL - いきものがかり.mp3", lrc: "YELL - いきものがかり.lrc" },
             { name: "旅立ちの日に - さくら学院", mp3: "旅立ちの日に - さくら学院.mp3", lrc: "旅立ちの日に - さくら学院.lrc" },
@@ -773,9 +783,9 @@
             }
         }
 
-        // 启动流程：验证通过后才显示主内容并初始化音乐播放器
+        // 启动流程
         (async function() {
-            // 显示加载提示（自定义弹窗风格）
+            // 显示加载提示
             const loadingOverlay = document.createElement('div');
             loadingOverlay.className = 'custom-modal-overlay';
             loadingOverlay.innerHTML = '<div class="custom-modal"><p>⏳ 加载验证数据中...</p></div>';
@@ -783,14 +793,21 @@
             try {
                 await loadAuthData();
                 loadingOverlay.remove();
-                const verified = await startVerification();
-                if (verified) {
-                    document.getElementById('mainContent').style.display = 'block';
-                    initLayout();
-                } else {
-                    // 理论上不会走到这里
-                    document.body.innerHTML = '<div style="text-align:center; margin-top:20vh; color:white;">アクセスが拒否されました。</div>';
+                const verifiedName = await startVerification();
+                // 通用彩蛋
+                await customAlert("恭喜你解锁彩蛋！考试别紧张，听两首歌放松一下吧！");
+                // 专属彩蛋（仅限徐梓琪）
+                if (verifiedName === "徐梓琪") {
+                    const specialMsg = await loadSpecialEgg();
+                    if (specialMsg) {
+                        await customAlert(specialMsg);
+                    } else {
+                        console.warn("未找到 xzq.txt 或读取失败");
+                    }
                 }
+                // 显示音乐播放器
+                document.getElementById('mainContent').style.display = 'block';
+                initLayout();
             } catch (err) {
                 loadingOverlay.remove();
                 await customAlert('数据加载失败: ' + err.message);
