@@ -28,7 +28,6 @@
             padding: 1rem;
             position: relative;
         }
-        /* 电脑端：左右高度自动对齐 */
         .pc-main-wrapper {
             display: flex;
             align-items: stretch;
@@ -372,6 +371,7 @@
             z-index: 10000;
         }
         .custom-modal {
+            position: relative;
             background: #fff;
             color: #333;
             border-radius: 2rem;
@@ -381,6 +381,20 @@
             text-align: center;
             box-shadow: 0 20px 35px rgba(0,0,0,0.3);
             font-family: system-ui, 'Segoe UI', sans-serif;
+        }
+        .custom-modal .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+            background: none;
+            border: none;
+            line-height: 1;
+        }
+        .custom-modal .modal-close:hover {
+            color: #333;
         }
         .custom-modal p {
             margin-bottom: 1rem;
@@ -483,7 +497,60 @@
         // 需要隐藏图片的用户列表（游客 + 特殊四人）
         const hideImageForUsers = ["蒋珊", "魏艳", "于颖", "安尔蒂西亚", "游客"];
 
-        // 自定义弹窗
+        // 是否允许自动播放（用户同意后设为 true）
+        let autoPlayEnabled = false;
+
+        // 自定义弹窗（普通消息）
+        function customAlert(message) {
+            return new Promise((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.className = 'custom-modal-overlay';
+                const modal = document.createElement('div');
+                modal.className = 'custom-modal';
+                modal.innerHTML = `<p>${message.replace(/\n/g, '<br>')}</p><button id="alertOkBtn">确定</button>`;
+                overlay.appendChild(modal);
+                document.body.appendChild(overlay);
+                const okBtn = modal.querySelector('#alertOkBtn');
+                okBtn.onclick = () => { overlay.remove(); resolve(); };
+            });
+        }
+
+        // 自定义询问弹窗（两个“是”按钮 + 右上角关闭）
+        function askPlayMusic() {
+            return new Promise((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.className = 'custom-modal-overlay';
+                const modal = document.createElement('div');
+                modal.className = 'custom-modal';
+                modal.innerHTML = `
+                    <span class="modal-close" id="askCloseBtn">✕</span>
+                    <p>是否开始播放音乐</p>
+                    <div>
+                        <button id="yesBtn1">是</button>
+                        <button id="yesBtn2">是</button>
+                    </div>
+                `;
+                overlay.appendChild(modal);
+                document.body.appendChild(overlay);
+                const closeBtn = modal.querySelector('#askCloseBtn');
+                const yesBtn1 = modal.querySelector('#yesBtn1');
+                const yesBtn2 = modal.querySelector('#yesBtn2');
+                const cleanup = () => overlay.remove();
+                const handlePlay = () => {
+                    cleanup();
+                    resolve(true);
+                };
+                const handleClose = () => {
+                    cleanup();
+                    resolve(false);
+                };
+                yesBtn1.onclick = handlePlay;
+                yesBtn2.onclick = handlePlay;
+                closeBtn.onclick = handleClose;
+            });
+        }
+
+        // 自定义带输入框的弹窗（用于姓名和日语输入）
         function customPrompt(question, isPassword = false) {
             return new Promise((resolve) => {
                 const overlay = document.createElement('div');
@@ -515,19 +582,6 @@
                 };
                 confirmBtn.onclick = submit;
                 input.onkeypress = (e) => { if (e.key === 'Enter') submit(); };
-            });
-        }
-        function customAlert(message) {
-            return new Promise((resolve) => {
-                const overlay = document.createElement('div');
-                overlay.className = 'custom-modal-overlay';
-                const modal = document.createElement('div');
-                modal.className = 'custom-modal';
-                modal.innerHTML = `<p>${message.replace(/\n/g, '<br>')}</p><button id="alertOkBtn">确定</button>`;
-                overlay.appendChild(modal);
-                document.body.appendChild(overlay);
-                const okBtn = modal.querySelector('#alertOkBtn');
-                okBtn.onclick = () => { overlay.remove(); resolve(); };
             });
         }
 
@@ -567,33 +621,28 @@
                 const name = await customPrompt("名前は：");
                 if (name === null) continue;
                 const trimmedName = name.trim();
-                // 管理员模式
                 if (trimmedName === "02") {
                     verifiedName = "管理员";
                     isAdmin = true;
                     break;
                 }
-                // 游客
                 if (trimmedName === "游客") {
                     await customAlert("Welcome ！hope u enjoy the music");
                     verifiedName = "游客";
                     isGuestOrSpecial = true;
                     break;
                 }
-                // 特殊彩蛋用户
                 if (specialEggs[trimmedName]) {
                     await customAlert(specialEggs[trimmedName]);
                     verifiedName = trimmedName;
                     isGuestOrSpecial = true;
                     break;
                 }
-                // 普通用户：需要验证第二个问题
                 const expectedAnswer = authMap[trimmedName];
                 if (expectedAnswer === undefined) {
                     await customAlert("ここから先は立ち入り禁止");
                     continue;
                 }
-                // 第二个问题循环，直到正确
                 let answerValid = false;
                 while (!answerValid) {
                     const userAnswer = await customPrompt("先生からもらった日本語は：");
@@ -716,7 +765,7 @@
                 line.addEventListener('click', () => {
                     if (currentLyrics[idx]) {
                         audio.currentTime = currentLyrics[idx].time;
-                        audio.play().catch(e => console.log("播放失败:", e));
+                        if (autoPlayEnabled) audio.play().catch(e => console.log("播放失败:", e));
                     }
                 });
             });
@@ -740,7 +789,7 @@
                 line.addEventListener('click', () => {
                     if (currentLyrics[idx]) {
                         audio.currentTime = currentLyrics[idx].time;
-                        audio.play().catch(e => console.log("播放失败:", e));
+                        if (autoPlayEnabled) audio.play().catch(e => console.log("播放失败:", e));
                     }
                 });
             });
@@ -785,7 +834,7 @@
             return str.replace(/[&<>]/g, m => (m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')));
         }
 
-        async function loadSong(index) {
+        async function loadSong(index, shouldAutoPlay = autoPlayEnabled) {
             if (index < 0 || index >= songs.length) return;
             currentSongIndex = index;
             const song = songs[currentSongIndex];
@@ -827,10 +876,17 @@
                 const btns = document.querySelectorAll('#songSwitch .song-btn');
                 btns.forEach((btn, i) => { if (i === index) btn.classList.add('active'); else btn.classList.remove('active'); });
             }
-            audio.play().catch(e => console.log("自动播放被阻止，请手动点击播放"));
+            // 根据 shouldAutoPlay 决定是否自动播放
+            if (shouldAutoPlay && autoPlayEnabled) {
+                audio.play().catch(e => console.log("自动播放被阻止，请手动点击播放"));
+            }
         }
 
-        function playNext() { let nextIndex = (currentSongIndex + 1) % songs.length; loadSong(nextIndex); }
+        function playNext() {
+            let nextIndex = (currentSongIndex + 1) % songs.length;
+            loadSong(nextIndex, true); // 自动下一首时尊重 autoPlayEnabled
+        }
+
         function initPcButtons() {
             const container = document.getElementById('songSwitch');
             if (!container) return;
@@ -841,10 +897,11 @@
                 if (idx === 0) btn.classList.add('active');
                 let shortName = song.name.length > 18 ? song.name.slice(0,16)+'…' : song.name;
                 btn.textContent = `🎵 ${shortName}`;
-                btn.addEventListener('click', () => loadSong(idx));
+                btn.addEventListener('click', () => loadSong(idx, true));
                 container.appendChild(btn);
             });
         }
+
         function initMobileButtons() {
             if (!mobileSongList) return;
             mobileSongList.innerHTML = '';
@@ -853,7 +910,7 @@
                 btn.className = 'mobile-song-btn';
                 if (idx === 0) btn.classList.add('active');
                 btn.textContent = song.name.length > 20 ? song.name.slice(0,18)+'…' : song.name;
-                btn.addEventListener('click', () => loadSong(idx));
+                btn.addEventListener('click', () => loadSong(idx, true));
                 mobileSongList.appendChild(btn);
             });
         }
@@ -862,7 +919,6 @@
             if (window.innerWidth <= 768) {
                 const pcWrapper = document.querySelector('.pc-main-wrapper');
                 if (pcWrapper) pcWrapper.style.display = 'none';
-                
                 if (!hideImage && !mobileImageDiv) {
                     mobileImageDiv = document.createElement('div');
                     mobileImageDiv.className = 'mobile-top-image';
@@ -894,7 +950,7 @@
                     if (isLyricsReady && currentLyrics.length && audio.currentTime) updateLyricsHighlightMobile(audio.currentTime);
                 });
                 audio.addEventListener('ended', playNext);
-                loadSong(0);
+                loadSong(0, false); // 先不自动播放，等待弹窗
                 const mobileMVBtn = document.getElementById('mobileWatchMVBtn');
                 if (mobileMVBtn) {
                     mobileMVBtn.addEventListener('click', () => {
@@ -919,7 +975,7 @@
                     if (isLyricsReady && currentLyrics.length && audio.currentTime) updateLyricsHighlightPc(audio.currentTime);
                 });
                 audio.addEventListener('ended', playNext);
-                loadSong(0);
+                loadSong(0, false); // 先不自动播放，等待弹窗
                 const pcMVBtn = document.getElementById('watchMVBtn');
                 if (pcMVBtn) {
                     pcMVBtn.addEventListener('click', () => {
@@ -987,7 +1043,6 @@
                 await loadAuthData();
                 loadingOverlay.remove();
                 const { verifiedName, isAdmin, isGuestOrSpecial } = await startVerification();
-                // 普通用户（非管理员、非游客、非特殊）才弹通用彩蛋和徐梓琪彩蛋
                 if (!isAdmin && !isGuestOrSpecial) {
                     await customAlert("恭喜你解锁彩蛋！考试别紧张，听两首歌放松一下吧！");
                     if (verifiedName === "徐梓琪") {
@@ -995,10 +1050,18 @@
                         if (specialMsg) await customAlert(specialMsg);
                     }
                 }
-                // 判断是否隐藏图片：游客或特殊四人（管理员不隐藏）
                 const shouldHideImage = (isGuestOrSpecial && verifiedName !== "管理员") ? true : false;
                 document.getElementById('mainContent').style.display = 'block';
                 initLayout(shouldHideImage);
+                // 弹出询问是否播放音乐的弹窗
+                const playChoice = await askPlayMusic();
+                if (playChoice) {
+                    autoPlayEnabled = true;
+                    // 触发当前歌曲播放
+                    if (audio && audio.src) {
+                        audio.play().catch(e => console.log("播放失败:", e));
+                    }
+                }
             } catch (err) {
                 loadingOverlay.remove();
                 await customAlert('数据加载失败: ' + err.message);
