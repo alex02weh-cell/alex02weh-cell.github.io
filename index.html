@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>💐恭喜你发现了彩蛋💐</title>
+    <title>🥳恭喜你发现了彩蛋🥳</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
@@ -49,9 +49,12 @@
             flex-direction: column;
             align-items: center;
         }
+        /* 电脑端图片：放大三倍 */
         .pc-side-image {
             flex-shrink: 0;
-            max-width: 130px;
+            /* 原 max-width: 130px，现在放大三倍 = 390px */
+            max-width: 390px;
+            width: auto;
         }
         .pc-side-image img {
             width: 100%;
@@ -218,13 +221,15 @@
                 flex-direction: column;
                 justify-content: flex-end;
             }
-            /* 手机端独立图片：位于整个音乐模块上方，不嵌入内部 */
+            /* 手机端图片：绝对定位，左侧，从上往下三分之一处 */
             .mobile-top-image {
-                width: 100%;
-                display: flex;
-                justify-content: flex-start;
-                margin-bottom: 10px;
+                position: fixed;
+                left: 0;
+                top: 33vh;
+                width: auto;
                 max-width: 150px;
+                z-index: 10;
+                pointer-events: none; /* 让图片不干扰点击 */
             }
             .mobile-top-image img {
                 width: 100%;
@@ -243,6 +248,8 @@
                 display: flex;
                 flex-direction: column;
                 align-items: flex-start;
+                position: relative;
+                z-index: 5;
             }
             .mobile-two-columns {
                 display: flex;
@@ -444,8 +451,8 @@
                     <div style="text-align:center; color:#aaa;">选择一首歌曲开始</div>
                 </div>
             </div>
-            <!-- 电脑端独立图片（右侧） -->
-            <div class="pc-side-image">
+            <!-- 电脑端独立图片（默认显示，游客模式会隐藏） -->
+            <div class="pc-side-image" id="pcSideImage">
                 <img src="卒業おめでとう(pc).png" alt="卒業おめでとう">
             </div>
         </div>
@@ -477,6 +484,7 @@
         let isLyricsReady = false;
         let mobileContainer = null, mobileSongList = null, mobileLyricsArea = null, mobileCurrentSongLabel = null, mobileAudio = null;
         let mobileImageDiv = null;
+        let isGuest = false;  // 游客标记
 
         // 自定义弹窗
         function customPrompt(question, isPassword = false) {
@@ -552,13 +560,22 @@
             } catch(e) { return null; }
         }
 
+        // 验证流程：增加游客判断
         async function startVerification() {
             await loadAuthData();
             let verifiedName = null;
+            let isGuestUser = false;
             while (true) {
                 const name = await customPrompt("名前は：");
                 if (name === null) continue;
                 const trimmedName = name.trim();
+                // 游客检测
+                if (trimmedName === "游客") {
+                    await customAlert("Welcome ！hope u enjoy the music");
+                    isGuestUser = true;
+                    verifiedName = "游客";
+                    break;
+                }
                 if (specialEggs[trimmedName]) {
                     await customAlert(specialEggs[trimmedName]);
                     verifiedName = trimmedName;
@@ -578,7 +595,7 @@
                 verifiedName = trimmedName;
                 break;
             }
-            return verifiedName;
+            return { verifiedName, isGuest: isGuestUser };
         }
 
         // 视频模块
@@ -829,18 +846,21 @@
             });
         }
 
-        function initLayout() {
+        function initLayout(isGuestMode) {
             if (window.innerWidth <= 768) {
                 // 隐藏电脑端内容
                 const pcWrapper = document.querySelector('.pc-main-wrapper');
                 if (pcWrapper) pcWrapper.style.display = 'none';
                 
-                // 创建手机端独立图片（如果尚未创建）
-                if (!mobileImageDiv) {
+                // 手机端图片：非游客模式下才创建
+                if (!isGuestMode && !mobileImageDiv) {
                     mobileImageDiv = document.createElement('div');
                     mobileImageDiv.className = 'mobile-top-image';
                     mobileImageDiv.innerHTML = '<img src="卒業おめでとう(mobile).png" alt="卒業おめでとう">';
                     document.body.appendChild(mobileImageDiv);
+                } else if (isGuestMode && mobileImageDiv) {
+                    mobileImageDiv.remove();
+                    mobileImageDiv = null;
                 }
                 // 创建手机端容器
                 mobileContainer = document.createElement('div');
@@ -876,11 +896,20 @@
                     });
                 }
             } else {
-                // 电脑端确保手机端元素被移除（如果有）
+                // 电脑端：移除手机端元素
                 if (mobileContainer) mobileContainer.remove();
                 if (mobileImageDiv) mobileImageDiv.remove();
                 const pcWrapper = document.querySelector('.pc-main-wrapper');
                 if (pcWrapper) pcWrapper.style.display = 'flex';
+                // 电脑端图片：非游客模式下显示，否则隐藏
+                const pcSideImage = document.getElementById('pcSideImage');
+                if (pcSideImage) {
+                    if (isGuestMode) {
+                        pcSideImage.style.display = 'none';
+                    } else {
+                        pcSideImage.style.display = 'block';
+                    }
+                }
                 audio = document.getElementById('audioPlayer');
                 initPcButtons();
                 audio.addEventListener('timeupdate', () => {
@@ -954,9 +983,9 @@
             try {
                 await loadAuthData();
                 loadingOverlay.remove();
-                const verifiedName = await startVerification();
-                const isSpecial = specialEggs.hasOwnProperty(verifiedName);
-                if (!isSpecial) {
+                const { verifiedName, isGuest: isGuestUser } = await startVerification();
+                isGuest = isGuestUser;
+                if (!isGuest) {
                     await customAlert("恭喜你解锁彩蛋！考试别紧张，听两首歌放松一下吧！");
                     if (verifiedName === "徐梓琪") {
                         const specialMsg = await loadSpecialEgg();
@@ -964,7 +993,7 @@
                     }
                 }
                 document.getElementById('mainContent').style.display = 'block';
-                initLayout();
+                initLayout(isGuest);
             } catch (err) {
                 loadingOverlay.remove();
                 await customAlert('数据加载失败: ' + err.message);
