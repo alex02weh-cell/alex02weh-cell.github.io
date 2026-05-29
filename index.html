@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🎵 音乐 · 彩蛋验证</title>
+    <title>🥳恭喜你发现了彩蛋🥳</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
@@ -48,10 +48,9 @@
             flex-direction: column;
             align-items: center;
         }
-        /* 电脑端图片：放大1.5倍，原390px -> 585px */
         .pc-side-image {
             flex-shrink: 0;
-            max-width: 585px;
+            max-width: 585px;  /* 原390px * 1.5 = 585px */
             width: auto;
         }
         .pc-side-image img {
@@ -217,11 +216,10 @@
                 flex-direction: column;
                 justify-content: flex-end;
             }
-            /* 手机端图片：往上挪，top 改为 15vh */
             .mobile-top-image {
                 position: fixed;
                 left: 0;
-                top: 15vh;
+                top: 8vh;   /* 往上移动 */
                 width: auto;
                 max-width: 150px;
                 z-index: 10;
@@ -450,7 +448,7 @@
     </div>
 
     <script>
-        // ========== 彩蛋映射 ==========
+        // ========== 彩蛋映射（特殊用户） ==========
         const specialEggs = {
             "蒋珊": "全体起立！欢迎蒋哥莅临！！！👏👏 请蒋哥鉴赏！",
             "魏艳": "热烈欢迎年度最佳小语种同事魏女士莅临寒舍👏👏👏 请你们听歌🎶",
@@ -476,6 +474,7 @@
         let mobileContainer = null, mobileSongList = null, mobileLyricsArea = null, mobileCurrentSongLabel = null, mobileAudio = null;
         let mobileImageDiv = null;
 
+        // 需要隐藏图片的用户列表（游客 + 特殊四人）
         const hideImageForUsers = ["蒋珊", "魏艳", "于颖", "安尔蒂西亚", "游客"];
 
         // 自定义弹窗
@@ -552,15 +551,23 @@
             } catch(e) { return null; }
         }
 
-        // 验证流程：修改第二个问题的重试逻辑
+        // 验证流程：管理员、游客、特殊用户、普通学生
         async function startVerification() {
             await loadAuthData();
             let verifiedName = null;
+            let isAdmin = false;
             let isGuestOrSpecial = false;
             while (true) {
                 const name = await customPrompt("名前は：");
                 if (name === null) continue;
                 const trimmedName = name.trim();
+                // 管理员模式
+                if (trimmedName === "02") {
+                    // 不弹任何窗，直接进入
+                    verifiedName = "管理员";
+                    isAdmin = true;
+                    break;
+                }
                 // 游客
                 if (trimmedName === "游客") {
                     await customAlert("Welcome ！hope u enjoy the music");
@@ -575,35 +582,28 @@
                     isGuestOrSpecial = true;
                     break;
                 }
-                // 普通 Excel 用户
+                // 普通用户：需要验证第二个问题
                 const expectedAnswer = authMap[trimmedName];
                 if (expectedAnswer === undefined) {
                     await customAlert("ここから先は立ち入り禁止");
-                    continue;
+                    continue; // 重新输入姓名
                 }
-                // 第二个问题：循环直到正确或取消
-                let answerCorrect = false;
-                while (!answerCorrect) {
+                // 第二个问题循环，直到正确
+                let answerValid = false;
+                while (!answerValid) {
                     const userAnswer = await customPrompt("先生からもらった日本語は：");
-                    if (userAnswer === null) {
-                        // 如果用户取消，则重新开始整个验证（可根据需求决定，这里为了简单，重新开始）
-                        answerCorrect = false;
-                        break;
-                    }
-                    if (userAnswer.trim() !== expectedAnswer) {
-                        await customAlert("输入有误哦");
-                        // 继续循环，不跳出，重新问第二个问题
+                    if (userAnswer === null) continue;
+                    if (userAnswer.trim() === expectedAnswer) {
+                        answerValid = true;
                     } else {
-                        answerCorrect = true;
+                        await customAlert("输入有误哦");
+                        // 继续循环，不返回第一步
                     }
                 }
-                if (answerCorrect) {
-                    verifiedName = trimmedName;
-                    break;
-                }
-                // 如果因为取消导致 answerCorrect 为 false，则 continue 重新从姓名开始
+                verifiedName = trimmedName;
+                break;
             }
-            return { verifiedName, isGuestOrSpecial };
+            return { verifiedName, isAdmin, isGuestOrSpecial };
         }
 
         // 视频模块
@@ -663,7 +663,7 @@
             if (audio && !audio.paused) audio.pause();
         }
 
-        // ========== 音乐播放器核心函数（保持不变） ==========
+        // ========== 音乐播放器核心函数 ==========
         const songs = [
             { name: "YELL - いきものがかり", mp3: "YELL - いきものがかり.mp3", lrc: "YELL - いきものがかり.lrc" },
             { name: "旅立ちの日に - さくら学院", mp3: "旅立ちの日に - さくら学院.mp3", lrc: "旅立ちの日に - さくら学院.lrc" },
@@ -982,15 +982,17 @@
             try {
                 await loadAuthData();
                 loadingOverlay.remove();
-                const { verifiedName, isGuestOrSpecial } = await startVerification();
-                if (!isGuestOrSpecial) {
+                const { verifiedName, isAdmin, isGuestOrSpecial } = await startVerification();
+                // 普通用户（非管理员、非游客、非特殊）才弹通用彩蛋和徐梓琪彩蛋
+                if (!isAdmin && !isGuestOrSpecial) {
                     await customAlert("恭喜你解锁彩蛋！考试别紧张，听两首歌放松一下吧！");
                     if (verifiedName === "徐梓琪") {
                         const specialMsg = await loadSpecialEgg();
                         if (specialMsg) await customAlert(specialMsg);
                     }
                 }
-                const shouldHideImage = hideImageForUsers.includes(verifiedName);
+                // 判断是否隐藏图片：游客或特殊四人（管理员不隐藏）
+                const shouldHideImage = (isGuestOrSpecial && verifiedName !== "管理员") ? true : false;
                 document.getElementById('mainContent').style.display = 'block';
                 initLayout(shouldHideImage);
             } catch (err) {
