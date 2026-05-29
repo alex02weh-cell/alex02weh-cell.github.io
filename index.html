@@ -28,12 +28,12 @@
             padding: 1rem;
             position: relative;
         }
+        /* 电脑端：左右高度自动对齐 */
         .pc-main-wrapper {
             display: flex;
-            align-items: center;
+            align-items: stretch;
             gap: 30px;
             width: 100%;
-            flex-wrap: wrap; /* 防止屏幕过小时溢出，但默认不换行 */
         }
         .card {
             background: rgba(0, 0, 0, 0.35);
@@ -49,17 +49,21 @@
             flex-direction: column;
             align-items: center;
         }
-        /* 电脑端图片：明显放大到固定宽度 700px，同时响应式 */
         .pc-side-image {
             flex-shrink: 0;
-            width: 700px;
-            max-width: 90vw;    /* 小屏幕下不超过视口宽度 */
+            display: flex;
+            align-items: center;
+            height: auto;
+            max-height: 100%;
         }
         .pc-side-image img {
-            width: 100%;
-            height: auto;
+            height: 100%;
+            width: auto;
+            max-height: 100%;
+            max-width: 100%;
             border-radius: 12px;
             display: block;
+            object-fit: contain;
         }
         .title-section {
             text-align: center;
@@ -565,7 +569,6 @@
                 const trimmedName = name.trim();
                 // 管理员模式
                 if (trimmedName === "02") {
-                    // 不弹任何窗，直接进入
                     verifiedName = "管理员";
                     isAdmin = true;
                     break;
@@ -588,7 +591,7 @@
                 const expectedAnswer = authMap[trimmedName];
                 if (expectedAnswer === undefined) {
                     await customAlert("ここから先は立ち入り禁止");
-                    continue; // 重新输入姓名
+                    continue;
                 }
                 // 第二个问题循环，直到正确
                 let answerValid = false;
@@ -599,7 +602,6 @@
                         answerValid = true;
                     } else {
                         await customAlert("输入有误哦");
-                        // 继续循环，不返回第一步
                     }
                 }
                 verifiedName = trimmedName;
