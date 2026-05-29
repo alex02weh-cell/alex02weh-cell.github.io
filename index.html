@@ -8,7 +8,6 @@
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <style>
-        /* 所有样式与上一版完全相同（省略重复，但最终输出会包含完整样式） */
         * {
             margin: 0;
             padding: 0;
@@ -49,9 +48,10 @@
             flex-direction: column;
             align-items: center;
         }
+        /* 电脑端图片：放大1.5倍，原390px -> 585px */
         .pc-side-image {
             flex-shrink: 0;
-            max-width: 390px;
+            max-width: 585px;
             width: auto;
         }
         .pc-side-image img {
@@ -217,10 +217,11 @@
                 flex-direction: column;
                 justify-content: flex-end;
             }
+            /* 手机端图片：往上挪，top 改为 15vh */
             .mobile-top-image {
                 position: fixed;
                 left: 0;
-                top: 33vh;
+                top: 15vh;
                 width: auto;
                 max-width: 150px;
                 z-index: 10;
@@ -449,7 +450,7 @@
     </div>
 
     <script>
-        // ========== 彩蛋映射（修改了蒋珊、魏艳、于颖的文本） ==========
+        // ========== 彩蛋映射 ==========
         const specialEggs = {
             "蒋珊": "全体起立！欢迎蒋哥莅临！！！👏👏 请蒋哥鉴赏！",
             "魏艳": "热烈欢迎年度最佳小语种同事魏女士莅临寒舍👏👏👏 请你们听歌🎶",
@@ -475,7 +476,6 @@
         let mobileContainer = null, mobileSongList = null, mobileLyricsArea = null, mobileCurrentSongLabel = null, mobileAudio = null;
         let mobileImageDiv = null;
 
-        // 需要隐藏图片的用户列表（游客 + 特殊四人）
         const hideImageForUsers = ["蒋珊", "魏艳", "于颖", "安尔蒂西亚", "游客"];
 
         // 自定义弹窗
@@ -552,7 +552,7 @@
             } catch(e) { return null; }
         }
 
-        // 验证流程：游客和特殊用户不触发后续弹窗
+        // 验证流程：修改第二个问题的重试逻辑
         async function startVerification() {
             await loadAuthData();
             let verifiedName = null;
@@ -581,14 +581,27 @@
                     await customAlert("ここから先は立ち入り禁止");
                     continue;
                 }
-                const userAnswer = await customPrompt("先生からもらった日本語は：");
-                if (userAnswer === null) continue;
-                if (userAnswer !== expectedAnswer) {
-                    await customAlert("输入有误哦");
-                    continue;
+                // 第二个问题：循环直到正确或取消
+                let answerCorrect = false;
+                while (!answerCorrect) {
+                    const userAnswer = await customPrompt("先生からもらった日本語は：");
+                    if (userAnswer === null) {
+                        // 如果用户取消，则重新开始整个验证（可根据需求决定，这里为了简单，重新开始）
+                        answerCorrect = false;
+                        break;
+                    }
+                    if (userAnswer.trim() !== expectedAnswer) {
+                        await customAlert("输入有误哦");
+                        // 继续循环，不跳出，重新问第二个问题
+                    } else {
+                        answerCorrect = true;
+                    }
                 }
-                verifiedName = trimmedName;
-                break;
+                if (answerCorrect) {
+                    verifiedName = trimmedName;
+                    break;
+                }
+                // 如果因为取消导致 answerCorrect 为 false，则 continue 重新从姓名开始
             }
             return { verifiedName, isGuestOrSpecial };
         }
@@ -650,7 +663,7 @@
             if (audio && !audio.paused) audio.pause();
         }
 
-        // ========== 音乐播放器核心函数 ==========
+        // ========== 音乐播放器核心函数（保持不变） ==========
         const songs = [
             { name: "YELL - いきものがかり", mp3: "YELL - いきものがかり.mp3", lrc: "YELL - いきものがかり.lrc" },
             { name: "旅立ちの日に - さくら学院", mp3: "旅立ちの日に - さくら学院.mp3", lrc: "旅立ちの日に - さくら学院.lrc" },
@@ -846,7 +859,6 @@
                 const pcWrapper = document.querySelector('.pc-main-wrapper');
                 if (pcWrapper) pcWrapper.style.display = 'none';
                 
-                // 手机端图片：只有不隐藏时才创建
                 if (!hideImage && !mobileImageDiv) {
                     mobileImageDiv = document.createElement('div');
                     mobileImageDiv.className = 'mobile-top-image';
@@ -856,7 +868,6 @@
                     mobileImageDiv.remove();
                     mobileImageDiv = null;
                 }
-                // 创建手机端容器
                 mobileContainer = document.createElement('div');
                 mobileContainer.className = 'mobile-container';
                 mobileContainer.innerHTML = `
@@ -890,7 +901,6 @@
                     });
                 }
             } else {
-                // 电脑端
                 if (mobileContainer) mobileContainer.remove();
                 if (mobileImageDiv) mobileImageDiv.remove();
                 const pcWrapper = document.querySelector('.pc-main-wrapper');
@@ -973,7 +983,6 @@
                 await loadAuthData();
                 loadingOverlay.remove();
                 const { verifiedName, isGuestOrSpecial } = await startVerification();
-                // 普通用户（非游客/非特殊）才弹通用彩蛋和徐梓琪彩蛋
                 if (!isGuestOrSpecial) {
                     await customAlert("恭喜你解锁彩蛋！考试别紧张，听两首歌放松一下吧！");
                     if (verifiedName === "徐梓琪") {
@@ -981,7 +990,6 @@
                         if (specialMsg) await customAlert(specialMsg);
                     }
                 }
-                // 判断是否需要隐藏图片：游客或特殊四人
                 const shouldHideImage = hideImageForUsers.includes(verifiedName);
                 document.getElementById('mainContent').style.display = 'block';
                 initLayout(shouldHideImage);
