@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🎵 音乐 · 彩蛋验证</title>
+    <title>🥳恭喜你发现了彩蛋🥳</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
@@ -31,8 +31,9 @@
         .pc-main-wrapper {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 30px;
             width: 100%;
+            flex-wrap: wrap; /* 防止屏幕过小时溢出，但默认不换行 */
         }
         .card {
             background: rgba(0, 0, 0, 0.35);
@@ -48,10 +49,11 @@
             flex-direction: column;
             align-items: center;
         }
+        /* 电脑端图片：明显放大到固定宽度 700px，同时响应式 */
         .pc-side-image {
             flex-shrink: 0;
-            max-width: 585px;  /* 原390px * 1.5 = 585px */
-            width: auto;
+            width: 700px;
+            max-width: 90vw;    /* 小屏幕下不超过视口宽度 */
         }
         .pc-side-image img {
             width: 100%;
@@ -219,7 +221,7 @@
             .mobile-top-image {
                 position: fixed;
                 left: 0;
-                top: 8vh;   /* 往上移动 */
+                top: 8vh;
                 width: auto;
                 max-width: 150px;
                 z-index: 10;
