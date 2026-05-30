@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🥳恭喜你成功发现了彩蛋，加载较慢，请耐性等候🥳</title>
+    <title>🥳恭喜你发现彩蛋🎉</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <style>
-        /* ========== 样式与上一版本完全一致，为节省篇幅此处省略，但最终输出会包含完整样式 ========== */
         * {
             margin: 0;
             padding: 0;
@@ -471,9 +470,9 @@
     <script>
         // ========== 常量配置 ==========
         const AUTH_STORAGE_KEY = 'music_site_auth';
-        const AUTH_VALID_DURATION = 30 * 60 * 1000; // 30分钟，单位毫秒
+        const AUTH_VALID_DURATION = 30 * 60 * 1000; // 30分钟
 
-        // ========== 彩蛋映射（特殊用户） ==========
+        // ========== 彩蛋映射 ==========
         const specialEggs = {
             "蒋珊": "全体起立！欢迎蒋哥莅临！！！👏👏 请蒋哥鉴赏！",
             "魏艳": "热烈欢迎年度最佳小语种同事魏女士莅临寒舍👏👏👏 请你们听歌🎶",
@@ -500,21 +499,17 @@
         let mobileImageDiv = null;
         let autoPlayEnabled = false;
 
-        // 需要隐藏图片的用户列表（游客 + 特殊四人）
         const hideImageForUsers = ["蒋珊", "魏艳", "于颖", "安尔蒂西亚", "游客"];
 
-        // ========== localStorage 验证状态管理 ==========
+        // ========== localStorage 验证状态 ==========
         function isAuthValid() {
             const stored = localStorage.getItem(AUTH_STORAGE_KEY);
             if (!stored) return false;
             try {
                 const data = JSON.parse(stored);
                 return data.expire && Date.now() < data.expire;
-            } catch(e) {
-                return false;
-            }
+            } catch(e) { return false; }
         }
-
         function setAuthValid() {
             const expireTime = Date.now() + AUTH_VALID_DURATION;
             localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ expire: expireTime }));
@@ -555,14 +550,8 @@
                 const yesBtn1 = modal.querySelector('#yesBtn1');
                 const yesBtn2 = modal.querySelector('#yesBtn2');
                 const cleanup = () => overlay.remove();
-                const handlePlay = () => {
-                    cleanup();
-                    resolve(true);
-                };
-                const handleClose = () => {
-                    cleanup();
-                    resolve(false);
-                };
+                const handlePlay = () => { cleanup(); resolve(true); };
+                const handleClose = () => { cleanup(); resolve(false); };
                 yesBtn1.onclick = handlePlay;
                 yesBtn2.onclick = handlePlay;
                 closeBtn.onclick = handleClose;
@@ -630,7 +619,6 @@
             } catch(e) { return null; }
         }
 
-        // ========== 验证流程（仅在需要时执行） ==========
         async function startVerification() {
             await loadAuthData();
             let verifiedName = null;
@@ -715,11 +703,8 @@
             videoElem.style.width = '100%';
             container.appendChild(videoElem);
             let videoType = 'video/mp4';
-            if (mvUrl.endsWith('.m3u8') || mvUrl.includes('.m3u8')) {
-                videoType = 'application/x-mpegURL';
-            } else if (mvUrl.endsWith('.mp4')) {
-                videoType = 'video/mp4';
-            }
+            if (mvUrl.endsWith('.m3u8') || mvUrl.includes('.m3u8')) videoType = 'application/x-mpegURL';
+            else if (mvUrl.endsWith('.mp4')) videoType = 'video/mp4';
             currentVideoPlayer = videojs(videoElem, {
                 sources: [{ src: mvUrl, type: videoType }],
                 autoplay: true,
@@ -1054,13 +1039,13 @@
         // ========== 主流程 ==========
         (async function() {
             initDrag();
-            // 检查本地存储的验证是否有效（半小时内）
+            // 检查半小时内是否已验证
             if (isAuthValid()) {
-                // 直接显示音乐界面，不进行任何验证弹窗
-                const shouldHideImage = false; // 默认不隐藏图片（因为无法获取之前的身份，但为了体验，统一显示图片）
+                const shouldHideImage = false;
                 document.getElementById('mainContent').style.display = 'block';
                 initLayout(shouldHideImage);
-                // 弹出是否播放音乐的询问
+                // 加载提示
+                await customAlert("音频和MV内容加载较慢，请耐心等候❥(^_-)");
                 const playChoice = await askPlayMusic();
                 if (playChoice) {
                     autoPlayEnabled = true;
@@ -1071,7 +1056,7 @@
                 return;
             }
 
-            // 否则执行完整验证流程
+            // 完整验证流程
             const loadingOverlay = document.createElement('div');
             loadingOverlay.className = 'custom-modal-overlay';
             loadingOverlay.innerHTML = '<div class="custom-modal"><p>⏳ 加载验证数据中...</p></div>';
@@ -1088,10 +1073,11 @@
                     }
                 }
                 const shouldHideImage = (isGuestOrSpecial && verifiedName !== "管理员") ? true : false;
-                // 验证通过，存储状态到 localStorage
                 setAuthValid();
                 document.getElementById('mainContent').style.display = 'block';
                 initLayout(shouldHideImage);
+                // 加载提示
+                await customAlert("音频和MV内容加载较慢，请耐心等候❥(^_-)");
                 const playChoice = await askPlayMusic();
                 if (playChoice) {
                     autoPlayEnabled = true;
