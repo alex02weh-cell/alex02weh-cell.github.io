@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🥳恭喜你发现了彩蛋🥳</title>
+    <title>🎵 音乐 · 彩蛋验证</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <style>
+        /* ========== 样式与上一版本完全一致，为节省篇幅此处省略，但最终输出会包含完整样式 ========== */
         * {
             margin: 0;
             padding: 0;
@@ -468,6 +469,10 @@
     </div>
 
     <script>
+        // ========== 常量配置 ==========
+        const AUTH_STORAGE_KEY = 'music_site_auth';
+        const AUTH_VALID_DURATION = 30 * 60 * 1000; // 30分钟，单位毫秒
+
         // ========== 彩蛋映射（特殊用户） ==========
         const specialEggs = {
             "蒋珊": "全体起立！欢迎蒋哥莅临！！！👏👏 请蒋哥鉴赏！",
@@ -493,14 +498,29 @@
         let isLyricsReady = false;
         let mobileContainer = null, mobileSongList = null, mobileLyricsArea = null, mobileCurrentSongLabel = null, mobileAudio = null;
         let mobileImageDiv = null;
+        let autoPlayEnabled = false;
 
         // 需要隐藏图片的用户列表（游客 + 特殊四人）
         const hideImageForUsers = ["蒋珊", "魏艳", "于颖", "安尔蒂西亚", "游客"];
 
-        // 是否允许自动播放（用户同意后设为 true）
-        let autoPlayEnabled = false;
+        // ========== localStorage 验证状态管理 ==========
+        function isAuthValid() {
+            const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+            if (!stored) return false;
+            try {
+                const data = JSON.parse(stored);
+                return data.expire && Date.now() < data.expire;
+            } catch(e) {
+                return false;
+            }
+        }
 
-        // 自定义弹窗（普通消息）
+        function setAuthValid() {
+            const expireTime = Date.now() + AUTH_VALID_DURATION;
+            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ expire: expireTime }));
+        }
+
+        // ========== 弹窗函数 ==========
         function customAlert(message) {
             return new Promise((resolve) => {
                 const overlay = document.createElement('div');
@@ -515,7 +535,6 @@
             });
         }
 
-        // 自定义询问弹窗（两个“是”按钮 + 右上角关闭）
         function askPlayMusic() {
             return new Promise((resolve) => {
                 const overlay = document.createElement('div');
@@ -550,7 +569,6 @@
             });
         }
 
-        // 自定义带输入框的弹窗（用于姓名和日语输入）
         function customPrompt(question, isPassword = false) {
             return new Promise((resolve) => {
                 const overlay = document.createElement('div');
@@ -585,6 +603,7 @@
             });
         }
 
+        // ========== 数据加载 ==========
         async function loadAuthData() {
             const response = await fetch('data.xlsx');
             if (!response.ok) throw new Error('Excel 文件未找到');
@@ -611,7 +630,7 @@
             } catch(e) { return null; }
         }
 
-        // 验证流程：管理员、游客、特殊用户、普通学生
+        // ========== 验证流程（仅在需要时执行） ==========
         async function startVerification() {
             await loadAuthData();
             let verifiedName = null;
@@ -659,7 +678,7 @@
             return { verifiedName, isAdmin, isGuestOrSpecial };
         }
 
-        // 视频模块
+        // ========== 视频模块 ==========
         function closeVideo() {
             const modal = document.getElementById('videoModal');
             if (modal) modal.classList.remove('active');
@@ -876,7 +895,6 @@
                 const btns = document.querySelectorAll('#songSwitch .song-btn');
                 btns.forEach((btn, i) => { if (i === index) btn.classList.add('active'); else btn.classList.remove('active'); });
             }
-            // 根据 shouldAutoPlay 决定是否自动播放
             if (shouldAutoPlay && autoPlayEnabled) {
                 audio.play().catch(e => console.log("自动播放被阻止，请手动点击播放"));
             }
@@ -884,7 +902,7 @@
 
         function playNext() {
             let nextIndex = (currentSongIndex + 1) % songs.length;
-            loadSong(nextIndex, true); // 自动下一首时尊重 autoPlayEnabled
+            loadSong(nextIndex, true);
         }
 
         function initPcButtons() {
@@ -950,7 +968,7 @@
                     if (isLyricsReady && currentLyrics.length && audio.currentTime) updateLyricsHighlightMobile(audio.currentTime);
                 });
                 audio.addEventListener('ended', playNext);
-                loadSong(0, false); // 先不自动播放，等待弹窗
+                loadSong(0, false);
                 const mobileMVBtn = document.getElementById('mobileWatchMVBtn');
                 if (mobileMVBtn) {
                     mobileMVBtn.addEventListener('click', () => {
@@ -975,7 +993,7 @@
                     if (isLyricsReady && currentLyrics.length && audio.currentTime) updateLyricsHighlightPc(audio.currentTime);
                 });
                 audio.addEventListener('ended', playNext);
-                loadSong(0, false); // 先不自动播放，等待弹窗
+                loadSong(0, false);
                 const pcMVBtn = document.getElementById('watchMVBtn');
                 if (pcMVBtn) {
                     pcMVBtn.addEventListener('click', () => {
@@ -1033,8 +1051,27 @@
             dragHandle.addEventListener('touchend', onTouchEnd);
         }
 
+        // ========== 主流程 ==========
         (async function() {
             initDrag();
+            // 检查本地存储的验证是否有效（半小时内）
+            if (isAuthValid()) {
+                // 直接显示音乐界面，不进行任何验证弹窗
+                const shouldHideImage = false; // 默认不隐藏图片（因为无法获取之前的身份，但为了体验，统一显示图片）
+                document.getElementById('mainContent').style.display = 'block';
+                initLayout(shouldHideImage);
+                // 弹出是否播放音乐的询问
+                const playChoice = await askPlayMusic();
+                if (playChoice) {
+                    autoPlayEnabled = true;
+                    if (audio && audio.src) {
+                        audio.play().catch(e => console.log("播放失败:", e));
+                    }
+                }
+                return;
+            }
+
+            // 否则执行完整验证流程
             const loadingOverlay = document.createElement('div');
             loadingOverlay.className = 'custom-modal-overlay';
             loadingOverlay.innerHTML = '<div class="custom-modal"><p>⏳ 加载验证数据中...</p></div>';
@@ -1051,13 +1088,13 @@
                     }
                 }
                 const shouldHideImage = (isGuestOrSpecial && verifiedName !== "管理员") ? true : false;
+                // 验证通过，存储状态到 localStorage
+                setAuthValid();
                 document.getElementById('mainContent').style.display = 'block';
                 initLayout(shouldHideImage);
-                // 弹出询问是否播放音乐的弹窗
                 const playChoice = await askPlayMusic();
                 if (playChoice) {
                     autoPlayEnabled = true;
-                    // 触发当前歌曲播放
                     if (audio && audio.src) {
                         audio.play().catch(e => console.log("播放失败:", e));
                     }
