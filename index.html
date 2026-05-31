@@ -552,11 +552,13 @@
                 const closeBtn = modal.querySelector('#askCloseBtn');
                 const yesBtn1 = modal.querySelector('#yesBtn1');
                 const yesBtn2 = modal.querySelector('#yesBtn2');
+                const yesBtn3 = modal.querySelector('#yesBtn3');
                 const cleanup = () => overlay.remove();
                 const handlePlay = () => { cleanup(); resolve(true); };
                 const handleClose = () => { cleanup(); resolve(false); };
                 yesBtn1.onclick = handlePlay;
                 yesBtn2.onclick = handlePlay;
+                yesBtn3.onclick = handlePlay;
                 closeBtn.onclick = handleClose;
             });
         }
