@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🥳恭喜你发现彩蛋🎉</title>
+    <title>🥳恭喜你发现彩蛋🥳</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <style>
+        /* 样式与上一版完全一致，保持不变（为节省篇幅此处省略，但最终输出会包含完整样式） */
         * {
             margin: 0;
             padding: 0;
@@ -470,7 +471,7 @@
     <script>
         // ========== 常量配置 ==========
         const AUTH_STORAGE_KEY = 'music_site_auth';
-        const AUTH_VALID_DURATION = 30 * 60 * 1000; // 30分钟
+        const AUTH_VALID_DURATION = 30 * 60 * 1000;
 
         // ========== 彩蛋映射 ==========
         const specialEggs = {
@@ -480,10 +481,11 @@
             "安尔蒂西亚": "你是最屌的吊毛！！！哈哈哈哈哈"
         };
 
+        // MV 映射：第三首歌没有 MV
         const mvMap = {
             "YELL - いきものがかり": "yell.mp4",
-            "旅立ちの日に - さくら学院": "さくら学院 - 旅立ちの日にMV.mp4",
-            "plenty - 人間そっくり": "人間そっくり-plenty.mp4"
+            "旅立ちの日に - さくら学院": "tabidachinohini-MV.mp4",
+            "闪耀 - 南征北战": null   // 无MV
         };
 
         let authMap = {};
@@ -687,7 +689,7 @@
 
         function openMV(mvUrl, songName) {
             if (!mvUrl) {
-                customAlert("抱歉，这首歌的MV暂时不可用。");
+                customAlert("这首歌没有MV哦");
                 return;
             }
             if (isVideoOpen) closeVideo();
@@ -724,7 +726,7 @@
         const songs = [
             { name: "YELL - いきものがかり", mp3: "YELL - いきものがかり.mp3", lrc: "YELL - いきものがかり.lrc" },
             { name: "旅立ちの日に - さくら学院", mp3: "旅立ちの日に - さくら学院.mp3", lrc: "旅立ちの日に - さくら学院.lrc" },
-            { name: "plenty - 人間そっくり", mp3: "plenty - 人間そっくり.mp3", lrc: "plenty - 人間そっくり.lrc" }
+            { name: "闪耀 - 南征北战", mp3: "闪耀-南征北战.mp3", lrc: "闪耀 - 南征北战NZBZ .lrc" }
         ];
 
         function parseLrc(lrcText) {
@@ -959,8 +961,7 @@
                     mobileMVBtn.addEventListener('click', () => {
                         const currentSong = songs[currentSongIndex];
                         const mvUrl = mvMap[currentSong.name];
-                        if (mvUrl) openMV(mvUrl, currentSong.name);
-                        else customAlert("抱歉，这首歌的MV暂时不可用。");
+                        openMV(mvUrl, currentSong.name);
                     });
                 }
             } else {
@@ -984,8 +985,7 @@
                     pcMVBtn.addEventListener('click', () => {
                         const currentSong = songs[currentSongIndex];
                         const mvUrl = mvMap[currentSong.name];
-                        if (mvUrl) openMV(mvUrl, currentSong.name);
-                        else customAlert("抱歉，这首歌的MV暂时不可用。");
+                        openMV(mvUrl, currentSong.name);
                     });
                 }
             }
@@ -1039,13 +1039,11 @@
         // ========== 主流程 ==========
         (async function() {
             initDrag();
-            // 检查半小时内是否已验证
             if (isAuthValid()) {
                 const shouldHideImage = false;
                 document.getElementById('mainContent').style.display = 'block';
                 initLayout(shouldHideImage);
-                // 加载提示
-                await customAlert("音频和MV内容加载较慢，请耐心等候❥(^_-)");
+                await customAlert("音频和视频内容加载较慢，请耐心等候❥(^_-)");
                 const playChoice = await askPlayMusic();
                 if (playChoice) {
                     autoPlayEnabled = true;
@@ -1056,7 +1054,6 @@
                 return;
             }
 
-            // 完整验证流程
             const loadingOverlay = document.createElement('div');
             loadingOverlay.className = 'custom-modal-overlay';
             loadingOverlay.innerHTML = '<div class="custom-modal"><p>⏳ 加载验证数据中...</p></div>';
@@ -1076,8 +1073,7 @@
                 setAuthValid();
                 document.getElementById('mainContent').style.display = 'block';
                 initLayout(shouldHideImage);
-                // 加载提示
-                await customAlert("音频和MV内容加载较慢，请耐心等候❥(^_-)");
+                await customAlert("音频和视频内容加载较慢，请耐心等候❥(^_-)");
                 const playChoice = await askPlayMusic();
                 if (playChoice) {
                     autoPlayEnabled = true;
