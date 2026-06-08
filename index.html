@@ -1066,7 +1066,7 @@
                 loadingOverlay.remove();
                 const { verifiedName, isAdmin, isGuestOrSpecial } = await startVerification();
                 if (!isAdmin && !isGuestOrSpecial) {
-                    await customAlert("恭喜你解锁彩蛋！考试别紧张，听两首歌放松一下吧！");
+                    await customAlert("恭喜你达成人生成就：通过高考！🎉💐🎉💐放心大胆的往前走，别后悔，别回头，未来在向你招手👋");
                     if (verifiedName === "徐梓琪") {
                         const specialMsg = await loadSpecialEgg();
                         if (specialMsg) await customAlert(specialMsg);
