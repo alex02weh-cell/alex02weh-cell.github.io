@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🥳恭喜你发现彩蛋🥳</title>
+    <title>🎉恭喜发现彩蛋🎉</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <style>
-        /* 样式与上一版完全一致，保持不变（为节省篇幅此处省略，但最终输出会包含完整样式） */
+        /* 样式与上一版本完全一致，为节省篇幅此处省略，但最终输出会包含完整样式 */
         * {
             margin: 0;
             padding: 0;
@@ -473,7 +473,7 @@
         const AUTH_STORAGE_KEY = 'music_site_auth';
         const AUTH_VALID_DURATION = 30 * 60 * 1000;
 
-        // ========== 彩蛋映射 ==========
+        // ========== 彩蛋映射（特殊用户） ==========
         const specialEggs = {
             "蒋珊": "全体起立！欢迎蒋哥莅临！！！👏👏 请蒋哥鉴赏！",
             "魏艳": "热烈欢迎年度最佳小语种同事魏女士莅临寒舍👏👏👏 请你们听歌🎶",
@@ -481,11 +481,11 @@
             "安尔蒂西亚": "你是最屌的吊毛！！！哈哈哈哈哈"
         };
 
-        // MV 映射：第三首歌没有 MV
+        // MV 映射
         const mvMap = {
             "YELL - いきものがかり": "yell.mp4",
             "旅立ちの日に - さくら学院": "tabidachinohini-MV.mp4",
-            "闪耀 - 南征北战": null   // 无MV
+            "闪耀 - 南征北战": null
         };
 
         let authMap = {};
@@ -542,9 +542,8 @@
                     <span class="modal-close" id="askCloseBtn">✕</span>
                     <p>是否开始播放音乐</p>
                     <div>
-                        <button id="yesBtn1">是！</button>
-                        <button id="yesBtn2">对！</button>
-                        <button id="yesBtn3">没错！</button>
+                        <button id="yesBtn1">是</button>
+                        <button id="yesBtn2">是</button>
                     </div>
                 `;
                 overlay.appendChild(modal);
@@ -552,13 +551,11 @@
                 const closeBtn = modal.querySelector('#askCloseBtn');
                 const yesBtn1 = modal.querySelector('#yesBtn1');
                 const yesBtn2 = modal.querySelector('#yesBtn2');
-                const yesBtn3 = modal.querySelector('#yesBtn3');
                 const cleanup = () => overlay.remove();
                 const handlePlay = () => { cleanup(); resolve(true); };
                 const handleClose = () => { cleanup(); resolve(false); };
                 yesBtn1.onclick = handlePlay;
                 yesBtn2.onclick = handlePlay;
-                yesBtn3.onclick = handlePlay;
                 closeBtn.onclick = handleClose;
             });
         }
@@ -616,14 +613,7 @@
             if (Object.keys(authMap).length === 0) throw new Error('Excel 无有效数据');
         }
 
-        async function loadSpecialEgg() {
-            try {
-                const response = await fetch('xzq.txt');
-                if (!response.ok) return null;
-                return (await response.text()).trim();
-            } catch(e) { return null; }
-        }
-
+        // ========== 验证流程：只验证姓名，无后续问题，无通用彩蛋 ==========
         async function startVerification() {
             await loadAuthData();
             let verifiedName = null;
@@ -633,40 +623,34 @@
                 const name = await customPrompt("名前は：");
                 if (name === null) continue;
                 const trimmedName = name.trim();
+                // 管理员
                 if (trimmedName === "02") {
                     verifiedName = "管理员";
                     isAdmin = true;
                     break;
                 }
+                // 游客
                 if (trimmedName === "游客") {
                     await customAlert("Welcome ！hope u enjoy the music");
                     verifiedName = "游客";
                     isGuestOrSpecial = true;
                     break;
                 }
+                // 特殊彩蛋用户
                 if (specialEggs[trimmedName]) {
                     await customAlert(specialEggs[trimmedName]);
                     verifiedName = trimmedName;
                     isGuestOrSpecial = true;
                     break;
                 }
-                const expectedAnswer = authMap[trimmedName];
-                if (expectedAnswer === undefined) {
-                    await customAlert("ここから先は立ち入り禁止");
-                    continue;
+                // 普通用户：检查 Excel 中是否存在
+                if (authMap[trimmedName] !== undefined) {
+                    verifiedName = trimmedName;
+                    break;
                 }
-                let answerValid = false;
-                while (!answerValid) {
-                    const userAnswer = await customPrompt("先生からもらった日本語は：");
-                    if (userAnswer === null) continue;
-                    if (userAnswer.trim() === expectedAnswer) {
-                        answerValid = true;
-                    } else {
-                        await customAlert("输入有误哦");
-                    }
-                }
-                verifiedName = trimmedName;
-                break;
+                // 姓名不存在
+                await customAlert("ここから先は立ち入り禁止");
+                // 继续循环，重新输入
             }
             return { verifiedName, isAdmin, isGuestOrSpecial };
         }
@@ -692,7 +676,7 @@
 
         function openMV(mvUrl, songName) {
             if (!mvUrl) {
-                customAlert("这首歌没有MV哦，这首歌支撑我走过了高三的一年，现在我把它送给你㊗️");
+                customAlert("这首歌没有MV哦");
                 return;
             }
             if (isVideoOpen) closeVideo();
@@ -1065,13 +1049,7 @@
                 await loadAuthData();
                 loadingOverlay.remove();
                 const { verifiedName, isAdmin, isGuestOrSpecial } = await startVerification();
-                if (!isAdmin && !isGuestOrSpecial) {
-                    await customAlert("恭喜你达成人生成就：通过高考！🎉💐🎉💐放心大胆的往前走，别后悔，别回头，未来在向你招手👋");
-                    if (verifiedName === "徐梓琪") {
-                        const specialMsg = await loadSpecialEgg();
-                        if (specialMsg) await customAlert(specialMsg);
-                    }
-                }
+                // 注意：不再有任何额外弹窗（通用彩蛋和徐梓琪彩蛋已移除）
                 const shouldHideImage = (isGuestOrSpecial && verifiedName !== "管理员") ? true : false;
                 setAuthValid();
                 document.getElementById('mainContent').style.display = 'block';
