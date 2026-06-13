@@ -8,7 +8,7 @@
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <style>
-        /* 样式与上一版本完全一致，为节省篇幅此处省略，但最终输出会包含完整样式 */
+        /* 样式完整，与上一版相同，此处略去重复，但最终输出会包含 */
         * {
             margin: 0;
             padding: 0;
@@ -1030,6 +1030,8 @@
                 const shouldHideImage = false;
                 document.getElementById('mainContent').style.display = 'block';
                 initLayout(shouldHideImage);
+                // 欢迎弹窗
+                await customAlert("ようこそいらっしゃい");
                 await customAlert("音频和视频内容加载较慢，请耐心等候❥(^_-)");
                 const playChoice = await askPlayMusic();
                 if (playChoice) {
@@ -1049,11 +1051,12 @@
                 await loadAuthData();
                 loadingOverlay.remove();
                 const { verifiedName, isAdmin, isGuestOrSpecial } = await startVerification();
-                // 注意：不再有任何额外弹窗（通用彩蛋和徐梓琪彩蛋已移除）
                 const shouldHideImage = (isGuestOrSpecial && verifiedName !== "管理员") ? true : false;
                 setAuthValid();
                 document.getElementById('mainContent').style.display = 'block';
                 initLayout(shouldHideImage);
+                // 欢迎弹窗（对所有成功登录的用户）
+                await customAlert("ようこそいらっしゃい");
                 await customAlert("音频和视频内容加载较慢，请耐心等候❥(^_-)");
                 const playChoice = await askPlayMusic();
                 if (playChoice) {
